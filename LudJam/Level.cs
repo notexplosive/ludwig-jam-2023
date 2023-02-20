@@ -22,24 +22,29 @@ public class Level
         Scene.RemovedActor += WhenActorRemoved;
     }
 
+    public Scene Scene { get; }
+    public Dictionary<Actor, HoverState> HoverStates { get; set; } = new();
+
     private void WhenActorRemoved(Actor actor)
     {
         HoverStates.Remove(actor);
     }
 
-    public Scene Scene { get; }
-    public Dictionary<Actor, HoverState> HoverStates { get; set; } = new();
-
     public void AddWall(Rectangle wallRectangle)
     {
         Scene.AddDeferredAction(() =>
         {
-            var actor = Scene.AddNewActor();
-            actor.Position = wallRectangle.Location.ToVector2();
-            actor.Depth = Depth.Middle + Scene.AllActors().Count() * 5;
-            actor.AddComponent<BoundingRectangle>().Init(wallRectangle.Size.ToVector2());
-            actor.AddComponent<WallRenderer>();
-            actor.AddComponent<EditorSerializable>().Init("Wall");
+            var wall = Scene.AddNewActor();
+            wall.Position = wallRectangle.Location.ToVector2();
+            wall.Depth = Depth.Middle + Scene.AllActors().Count() * 5;
+            wall.AddComponent<BoundingRectangle>().Init(wallRectangle.Size.ToVector2());
+            wall.AddComponent<WallRenderer>();
+            wall.AddComponent<EditorSerializable>().Init(actor =>
+            {
+                var rect = actor.GetComponent<BoundingRectangle>()!.Rectangle;
+                return new WallData
+                    {Position = rect.Location, Size = rect.Size};
+            });
         });
     }
 
@@ -67,7 +72,7 @@ public class Level
                 _cat = Scene.AddNewActor();
                 _cat.Scale = LudGameCartridge.ActorScale;
                 _cat.Depth = Depth.Front + 100;
-                _cat.AddComponent<EditorSerializable>().Init("Cat");
+                _cat.AddComponent<EditorSerializable>().Init(actor => new CatData {Position = actor.Position});
                 _cat.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 9);
             });
         }
@@ -84,11 +89,30 @@ public class Level
                 _spawn = Scene.AddNewActor();
                 _spawn.Scale = LudGameCartridge.ActorScale;
                 _spawn.Depth = Depth.Front + 100;
-                _spawn.AddComponent<EditorSerializable>().Init("Spawn");
+                _spawn.AddComponent<EditorSerializable>().Init(actor => new SpawnData {Position = actor.Position});
                 _spawn.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3);
             });
         }
 
         Scene.AddDeferredAction(() => { _spawn!.Position = position; });
+    }
+
+    public struct CatData : ISerializedContent
+    {
+        public string Name => "Cat";
+        public Vector2 Position { get; set; }
+    }
+
+    public struct SpawnData : ISerializedContent
+    {
+        public string Name => "Spawn";
+        public Vector2 Position { get; set; }
+    }
+
+    public struct WallData : ISerializedContent
+    {
+        public string Name => "Wall";
+        public Vector2 Size { get; set; }
+        public Vector2 Position { get; set; }
     }
 }

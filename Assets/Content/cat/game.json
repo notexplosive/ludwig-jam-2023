@@ -1,0 +1,17 @@
+{
+  "Content": [
+    {
+      "Name": "Cat",
+      "Position": "1501, 758"
+    },
+    {
+      "Name": "Spawn",
+      "Position": "401, 728"
+    },
+    {
+      "Name": "Wall",
+      "Size": "1452, 258",
+      "Position": "230, 792"
+    }
+  ]
+}

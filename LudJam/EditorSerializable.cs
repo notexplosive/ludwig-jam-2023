@@ -1,4 +1,5 @@
-﻿using ExplogineMonoGame;
+﻿using System;
+using ExplogineMonoGame;
 using ExplogineMonoGame.Data;
 using Fenestra.Components;
 using FenestraSceneGraph;
@@ -11,11 +12,11 @@ public class EditorSerializable : BaseComponent
     {
     }
 
-    public string? SerialString { get; private set; }
+    private Func<Actor,ISerializedContent>? SerializeFunction { get; set; }
 
-    public EditorSerializable Init(string serialString)
+    public EditorSerializable Init(Func<Actor,ISerializedContent> serializeFunction)
     {
-        SerialString = serialString;
+        SerializeFunction = serializeFunction;
         return this;
     }
 
@@ -25,5 +26,14 @@ public class EditorSerializable : BaseComponent
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
+    }
+
+    public ISerializedContent Serialize()
+    {
+        if (SerializeFunction == null)
+        {
+            throw new Exception("No serializer function defined");
+        }
+        return SerializeFunction(Actor);
     }
 }
