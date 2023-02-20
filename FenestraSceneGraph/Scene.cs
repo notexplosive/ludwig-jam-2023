@@ -44,6 +44,7 @@ public class Scene
         }
     }
 
+    public event Action<Actor>? RemovedActor;
     public event Action<Point>? WorldSizeChanged;
 
     public void PrepareDraw(Painter painter)
@@ -106,6 +107,7 @@ public class Scene
     public void RemoveActor(Actor actor)
     {
         _actors.Remove(actor);
+        RemovedActor?.Invoke(actor);
     }
 
     public void AddDeferredAction(Action deferredAction)

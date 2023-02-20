@@ -4,14 +4,14 @@ using ExplogineMonoGame.Input;
 
 namespace LudJam;
 
-public class PlaceCatTool : IEditorTool
+public class PlaceSpawnTool : IEditorTool
 {
-    public string Name => "Cat";
+    public string Name => "Spawn";
     public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level)
     {
         if (input.Mouse.GetButton(MouseButton.Left, true).IsDown)
         {
-            level.SetCatPosition(input.Mouse.Position(hitTestStack.WorldMatrix));
+            level.SetSpawnPosition(input.Mouse.Position(hitTestStack.WorldMatrix));
         }
     }
 

@@ -4,6 +4,7 @@ using ExplogineMonoGame;
 using ExplogineMonoGame.Cartridges;
 using ExplogineMonoGame.Data;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace LudJam;
@@ -21,7 +22,7 @@ public class LudEditorCartridge : NoProviderCartridge
     {
     }
 
-    public override CartridgeConfig CartridgeConfig => new(new Point(1920, 1080));
+    public override CartridgeConfig CartridgeConfig => new(new Point(1920, 1080), SamplerState.PointWrap);
 
     public IEditorTool CurrentTool => _tools[_currentToolIndex];
 
@@ -59,6 +60,10 @@ public class LudEditorCartridge : NoProviderCartridge
         // Draw Level
         painter.BeginSpriteBatch();
         _state.Level.Draw(painter);
+        painter.EndSpriteBatch();
+        
+        painter.BeginSpriteBatch();
+        CurrentTool.Draw(painter);
         painter.EndSpriteBatch();
 
         // Draw Editor Status
