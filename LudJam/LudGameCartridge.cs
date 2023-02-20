@@ -13,7 +13,8 @@ namespace LudJam;
 
 public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 {
-    private Scene _scene = new(new Point(1920, 1080));
+    private Level _currentLevel;
+    private Camera _camera = new Camera(new Vector2(1920, 1080));
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
@@ -49,25 +50,39 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void OnCartridgeStarted()
     {
-        _scene = new Scene(new Point(1920, 1080));
+        _currentLevel = LoadLevel(0);
+    }
+
+    private Level LoadLevel(int i)
+    {
+        if (i < LevelSequence.Length)
+        {
+            var levelName = LevelSequence[i];
+            return new Level().LoadFromJson(G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{levelName}.json"));
+        }
+        else
+        {
+            throw new Exception("Ran out of levels! ... I need to make an outro screen");
+        }
     }
 
     public override void Draw(Painter painter)
     {
-        painter.BeginSpriteBatch();
-        painter.DrawDebugStringAtPosition("Game", new Vector2(0), new DrawSettings());
-        _scene.DrawContent(painter);
+        G.DrawBackground(painter, Runtime.Window.RenderResolution, _camera);
+        
+        painter.BeginSpriteBatch(_camera.CanvasToScreen);
+        _currentLevel.Scene.DrawContent(painter);
         painter.EndSpriteBatch();
     }
 
     public override void Update(float dt)
     {
-        _scene.Update(dt);
+        _currentLevel.Scene.Update(dt);
     }
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
-        _scene.UpdateInput(input, hitTestStack);
+        _currentLevel.Scene.UpdateInput(input, hitTestStack);
     }
 
     public override void Unload()

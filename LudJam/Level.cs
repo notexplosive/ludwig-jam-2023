@@ -100,7 +100,7 @@ public class Level
         Scene.AddDeferredAction(() => { _spawn!.Position = position; });
     }
 
-    public void LoadFromJson(string text)
+    public Level LoadFromJson(string text)
     {
         try
         {
@@ -126,6 +126,8 @@ public class Level
         {
             Client.Debug.LogWarning($"Could not open file: {e}");
         }
+
+        return this;
     }
 
     private static ISerializedContent GetSerializedData(string? name, string objString)

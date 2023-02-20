@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ExplogineCore;
 using ExplogineCore.Data;
 using ExplogineMonoGame;
 using ExplogineMonoGame.Cartridges;
@@ -13,8 +12,6 @@ using ExplogineMonoGame.Layout;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace LudJam;
 
@@ -34,19 +31,6 @@ public class LudEditorCartridge : NoProviderCartridge
 
     public LudEditorCartridge(IRuntime runtime) : base(runtime)
     {
-    }
-
-    public IFileSystem EditorDevelopmentFileSystem
-    {
-        get
-        {
-#if DEBUG
-            return new RealFileSystem(Path.Join(
-                AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Assets"));
-#else
-            return Runtime.FileSystem.Local;
-#endif
-        }
     }
 
     public override CartridgeConfig CartridgeConfig => new(new Point(1920, 1080), SamplerState.PointWrap);
@@ -77,20 +61,7 @@ public class LudEditorCartridge : NoProviderCartridge
         _textField.PrepareDraw(painter, _theme);
         _openGui.PrepareCanvases(painter, _theme);
 
-        // Draw background
-        painter.BeginSpriteBatch();
-        var backgroundColor = ColorExtensions.FromRgbHex(0x333333);
-        var backgroundAccentColor = ColorExtensions.FromRgbHex(0x222222);
-        var renderResolution = Runtime.Window.RenderResolution.ToRectangleF();
-        painter.DrawRectangle(renderResolution, new DrawSettings {Color = backgroundColor});
-        painter.DrawAsRectangle(Client.Assets.GetTexture("Background"), renderResolution,
-            new DrawSettings
-            {
-                SourceRectangle = new Rectangle((_state.Camera.CenterPosition / 2f).ToPoint(),
-                    (renderResolution.Size * LudEditorCartridge.BackgroundScalar).ToPoint()),
-                Color = backgroundAccentColor
-            });
-        painter.EndSpriteBatch();
+        G.DrawBackground(painter, Runtime.Window.RenderResolution, _state.Camera);
 
         // Draw Level
         painter.BeginSpriteBatch(_state.Camera.CanvasToScreen);
@@ -217,7 +188,7 @@ public class LudEditorCartridge : NoProviderCartridge
         _openGui.Clear();
 
         var fileNames = new List<string>();
-        foreach (var fileName in EditorDevelopmentFileSystem.GetFilesAt("Content/cat"))
+        foreach (var fileName in G.EditorDevelopmentFileSystem(Runtime).GetFilesAt("Content/cat"))
         {
             if (fileName.EndsWith(".json"))
             {
@@ -249,7 +220,7 @@ public class LudEditorCartridge : NoProviderCartridge
     {
         _state = new EditorState();
         _state.SavedName = fileName;
-        var text = EditorDevelopmentFileSystem.ReadFile($"Content/cat/{fileName}.json");
+        var text = G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{fileName}.json");
 
         _state.Level.LoadFromJson(text);
     }
@@ -294,7 +265,7 @@ public class LudEditorCartridge : NoProviderCartridge
         }
 
         Client.Debug.Log($"Writing file {fileName}");
-        EditorDevelopmentFileSystem.WriteToFile($"Content/cat/{fileName}", content.AsJson());
+        G.EditorDevelopmentFileSystem(Runtime).WriteToFile($"Content/cat/{fileName}", content.AsJson());
     }
 
     private void PromptForName()
