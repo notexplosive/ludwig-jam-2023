@@ -13,8 +13,17 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin cat/canyon.json
+/copy:cat/canyon.json
+
+#begin cat/foob.json
+/copy:cat/foob.json
+
 #begin cat/game.json
 /copy:cat/game.json
+
+#begin cat/grungle.json
+/copy:cat/grungle.json
 
 #begin cat/level-sequence.txt
 /copy:cat/level-sequence.txt

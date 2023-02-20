@@ -39,14 +39,14 @@ public class Level
         {
             var wall = Scene.AddNewActor();
             wall.Position = wallRectangle.Location.ToVector2();
-            wall.Depth = Depth.Middle + Scene.AllActors().Count() * 5;
+            wall.Depth = Depth.Middle - Scene.AllActors().Count() * 5;
             wall.AddComponent<BoundingRectangle>().Init(wallRectangle.Size.ToVector2());
             wall.AddComponent<WallRenderer>();
             wall.AddComponent<EditorSerializable>().Init(actor =>
             {
                 var rect = actor.GetComponent<BoundingRectangle>()!.Rectangle.ToRectangle();
                 return new WallData
-                    {X = rect.X, Y = rect.Y, Width = rect.Width, Height = rect.Width};
+                    {X = rect.X, Y = rect.Y, Width = rect.Width, Height = rect.Height};
             });
         });
     }
