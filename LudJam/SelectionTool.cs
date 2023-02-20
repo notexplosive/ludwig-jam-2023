@@ -59,7 +59,6 @@ public class SelectionTool : IEditorTool
                 {
                     if (!level.HoverStates.ContainsKey(actor))
                     {
-                        // this kinda sorta leaks memory oops
                         level.HoverStates.Add(actor, new HoverState());
                     }
 

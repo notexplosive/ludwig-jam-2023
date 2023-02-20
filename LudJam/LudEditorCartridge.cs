@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using ExplogineCore.Data;
 using ExplogineMonoGame;
 using ExplogineMonoGame.Cartridges;
 using ExplogineMonoGame.Data;
+using ExplogineMonoGame.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -35,9 +37,6 @@ public class LudEditorCartridge : NoProviderCartridge
             new PlaceCatTool(),
             new PlaceSpawnTool()
         };
-
-        _state.Level.AddWall(new Rectangle(100, 100, 263, 242));
-        _state.Level.AddWall(new Rectangle(400, 150, 612, 483));
     }
 
     public override void Draw(Painter painter)
@@ -51,18 +50,18 @@ public class LudEditorCartridge : NoProviderCartridge
         painter.DrawAsRectangle(Client.Assets.GetTexture("Background"), renderResolution,
             new DrawSettings
             {
-                SourceRectangle = new Rectangle(Point.Zero,
+                SourceRectangle = new Rectangle((_state.Camera.TopLeftPosition / 2f).ToPoint(),
                     (renderResolution.Size * LudEditorCartridge.BackgroundScalar).ToPoint()),
                 Color = backgroundAccentColor
             });
         painter.EndSpriteBatch();
         
         // Draw Level
-        painter.BeginSpriteBatch();
+        painter.BeginSpriteBatch(_state.Camera.CanvasToScreen);
         _state.Level.Draw(painter);
         painter.EndSpriteBatch();
         
-        painter.BeginSpriteBatch();
+        painter.BeginSpriteBatch(_state.Camera.CanvasToScreen);
         CurrentTool.Draw(painter);
         painter.EndSpriteBatch();
 
@@ -94,10 +93,29 @@ public class LudEditorCartridge : NoProviderCartridge
         {
             _currentToolIndex = pressedNumber.Value % _tools.Count;
         }
-        
-        _state.Level.UpdateInput(input, hitTestStack);
 
-        CurrentTool.UpdateInput(input, hitTestStack, _state.Level);
+        var cameraSpaceLayer = hitTestStack.AddLayer(_state.Camera.ScreenToCanvas, Depth.Middle);
+        
+        if (input.Mouse.GetButton(MouseButton.Middle).IsDown)
+        {
+            var delta = input.Mouse.Delta(cameraSpaceLayer.WorldMatrix);
+            _state.Camera.CenterPosition -= delta;
+        }
+
+        if (input.Mouse.ScrollDelta() != 0)
+        {
+            if (input.Mouse.ScrollDelta() > 0)
+            {
+                _state.Camera.ZoomInTowards(10, input.Mouse.Position(cameraSpaceLayer.WorldMatrix));
+            }
+            else
+            {
+                _state.Camera.ZoomOutFrom(10, input.Mouse.Position(cameraSpaceLayer.WorldMatrix));
+            }
+        }
+        
+        _state.Level.UpdateInput(input, cameraSpaceLayer);
+        CurrentTool.UpdateInput(input, cameraSpaceLayer, _state.Level);
     }
 
     private int? PressedNumberRowButton(ConsumableInput input)
