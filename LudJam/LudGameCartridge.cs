@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ExplogineCore;
 using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Cartridges;
@@ -36,7 +37,14 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
                 new Rectangle(LudEditorCartridge.TextureFrameSize, 0, LudEditorCartridge.TextureFrameSize,
                     LudEditorCartridge.TextureFrameSize),
                 Client.Assets.GetTexture("cat/sheet"))));
+
+        yield return new VoidLoadEvent("LevelSequence", () =>
+        {
+            LudGameCartridge.LevelSequence = Runtime.FileSystem.Local.ReadFile("Content/cat/level-sequence.txt").SplitLines();
+        });
     }
+
+    public static string[] LevelSequence { get; private set; }
 
     public override void OnCartridgeStarted()
     {

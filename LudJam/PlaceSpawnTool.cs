@@ -7,8 +7,13 @@ namespace LudJam;
 public class PlaceSpawnTool : IEditorTool
 {
     public string Name => "Spawn";
-    public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level)
+    public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level, bool isWithinScreen)
     {
+        if (!isWithinScreen)
+        {
+            return;
+        }
+        
         if (input.Mouse.GetButton(MouseButton.Left, true).IsDown)
         {
             level.SetSpawnPosition(input.Mouse.Position(hitTestStack.WorldMatrix));

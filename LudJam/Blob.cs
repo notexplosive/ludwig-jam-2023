@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ExplogineCore;
 using Newtonsoft.Json;
 
 namespace LudJam;
@@ -17,6 +18,6 @@ public class Blob
     public string[] AsJson()
     {
         var blob = JsonConvert.SerializeObject(this, Formatting.Indented);
-        return blob.Split(Environment.NewLine);
+        return blob.SplitLines();
     }
 }

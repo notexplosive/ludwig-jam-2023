@@ -17,7 +17,7 @@ public class SelectionTool : IEditorTool
     private Actor? _selectedActor;
     public string Name => "Selection";
 
-    public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level)
+    public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level, bool isWithinScreen)
     {
         var isResizing = false;
         if (_selectedActor != null)
@@ -51,18 +51,21 @@ public class SelectionTool : IEditorTool
 
         if (!isResizing)
         {
-            foreach (var actor in level.Scene.AllActors())
+            if (isWithinScreen)
             {
-                var boundingRectangle = actor.GetComponent<BoundingRectangle>();
-
-                if (boundingRectangle != null)
+                foreach (var actor in level.Scene.AllActors())
                 {
-                    if (!level.HoverStates.ContainsKey(actor))
-                    {
-                        level.HoverStates.Add(actor, new HoverState());
-                    }
+                    var boundingRectangle = actor.GetComponent<BoundingRectangle>();
 
-                    hitTestStack.AddZone(boundingRectangle.Rectangle, actor.Depth, level.HoverStates[actor], true);
+                    if (boundingRectangle != null)
+                    {
+                        if (!level.HoverStates.ContainsKey(actor))
+                        {
+                            level.HoverStates.Add(actor, new HoverState());
+                        }
+
+                        hitTestStack.AddZone(boundingRectangle.Rectangle, actor.Depth, level.HoverStates[actor], true);
+                    }
                 }
             }
 

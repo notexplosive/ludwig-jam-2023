@@ -13,9 +13,9 @@ public class WallTool : IEditorTool
     private Vector2 _currentPosition;
     public string Name => "Wall";
 
-    public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level)
+    public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level, bool isWithinScreen)
     {
-        if (input.Mouse.GetButton(MouseButton.Left).WasPressed)
+        if (input.Mouse.GetButton(MouseButton.Left).WasPressed && isWithinScreen)
         {
             _startPosition = input.Mouse.Position(hitTestStack.WorldMatrix);
         }

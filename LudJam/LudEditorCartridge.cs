@@ -32,7 +32,7 @@ public class LudEditorCartridge : NoProviderCartridge
     {
     }
 
-    public static RealFileSystem EditorDevelopmentFileSystem
+    public IFileSystem EditorDevelopmentFileSystem
     {
         get
         {
@@ -54,7 +54,7 @@ public class LudEditorCartridge : NoProviderCartridge
     public override void OnCartridgeStarted()
     {
         var bigFont = Client.Assets.GetFont("engine/logo-font", 72);
-        _theme = new SimpleGuiTheme(Color.White, Color.Transparent, Color.Transparent, bigFont);
+        _theme = new SimpleGuiTheme(Color.White, Color.Black, Color.Transparent, bigFont);
         _textField = new TextInputWidget(
             Runtime.Window.RenderResolution.ToRectangleF().InflatedMaintainAspectRatio(-300),
             bigFont,
@@ -163,7 +163,9 @@ public class LudEditorCartridge : NoProviderCartridge
             }
 
             _state.Level.UpdateInput(input, cameraSpaceLayer);
-            CurrentTool.UpdateInput(input, cameraSpaceLayer, _state.Level);
+
+            var isWithinScreen = Runtime.Window.RenderResolution.ToRectangleF().Contains(input.Mouse.Position());
+            CurrentTool.UpdateInput(input, cameraSpaceLayer, _state.Level, isWithinScreen);
 
             HotKeys.RunBinding(input, HotKeys.Ctrl, Keys.N, NewFile);
             HotKeys.RunBinding(input, HotKeys.Ctrl, Keys.S, Save);
@@ -217,7 +219,7 @@ public class LudEditorCartridge : NoProviderCartridge
         }
 
         Client.Debug.Log($"Writing file {fileName}");
-        LudEditorCartridge.EditorDevelopmentFileSystem.WriteToFile(fileName, content.AsJson());
+        EditorDevelopmentFileSystem.WriteToFile(fileName, content.AsJson());
         Runtime.FileSystem.Local.WriteToFile(fileName, content.AsJson());
     }
 
