@@ -27,6 +27,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Assets", "Assets\Assets.shp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LudJam", "LudJam\LudJam.csproj", "{6E97F2D3-4DD9-431B-A7D0-AEA7326AFDBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FenestraSceneGraph", "FenestraSceneGraph\FenestraSceneGraph.csproj", "{F19573CF-748B-4430-945F-1F98897B6F44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,6 +70,10 @@ Global
 		{6E97F2D3-4DD9-431B-A7D0-AEA7326AFDBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E97F2D3-4DD9-431B-A7D0-AEA7326AFDBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E97F2D3-4DD9-431B-A7D0-AEA7326AFDBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F19573CF-748B-4430-945F-1F98897B6F44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F19573CF-748B-4430-945F-1F98897B6F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F19573CF-748B-4430-945F-1F98897B6F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F19573CF-748B-4430-945F-1F98897B6F44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B91377D3-0DFD-4684-B6EC-5B648767A985} = {2AAC9F48-EAE0-4DF3-A649-712824C3E893}

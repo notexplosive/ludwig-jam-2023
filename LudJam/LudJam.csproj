@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
+        <OutputType>WinExe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <PublishReadyToRun>false</PublishReadyToRun>
         <TieredCompilation>false</TieredCompilation>
         <PublishSingleFile>true</PublishSingleFile>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup>
         <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -24,6 +25,7 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\explogine\Library\ExplogineDesktop\ExplogineDesktop.csproj" />
+      <ProjectReference Include="..\FenestraSceneGraph\FenestraSceneGraph.csproj" />
     </ItemGroup>
     <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
         <Message Text="Restoring dotnet tools" Importance="High" />

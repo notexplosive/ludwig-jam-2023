@@ -1,11 +1,14 @@
 ﻿using ExplogineDesktop;
 using ExplogineMonoGame;
-using ExplogineMonoGame.Cartridges;
+using LudJam;
 using Microsoft.Xna.Framework;
 
 var config = new WindowConfigWritable
 {
-    WindowSize = new Point(1600, 900),
+    WindowSize = new Point(1920, 1080),
+#if !DEBUG
+    Fullscreen = true,
+#endif
     Title = "NotExplosive.net"
 };
-Bootstrap.Run(args, new WindowConfig(config), (runtime) => new BlankCartridge(runtime));
+Bootstrap.Run(args, new WindowConfig(config), runtime => new LudCoreCartridge(runtime));
