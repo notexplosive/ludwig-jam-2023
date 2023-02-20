@@ -24,4 +24,9 @@ public class HotKeys
     {
         return input.Keyboard.Modifiers.None;
     }
+
+    public static bool CtrlShift(ConsumableInput input)
+    {
+        return input.Keyboard.Modifiers.ControlShift;
+    }
 }

@@ -3,5 +3,6 @@
 public enum Mode
 {
     Main,
-    Typing
+    Typing,
+    Opening,
 }

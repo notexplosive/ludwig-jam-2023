@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ExplogineCore;
 using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
@@ -44,7 +45,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         });
     }
 
-    public static string[] LevelSequence { get; private set; }
+    public static string[] LevelSequence { get; private set; } = Array.Empty<string>();
 
     public override void OnCartridgeStarted()
     {

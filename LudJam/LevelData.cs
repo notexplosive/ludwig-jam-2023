@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace LudJam;
 
-public class Blob
+public class LevelData
 {
     // Must be public to be serialized
     public readonly List<ISerializedContent> Content = new();
