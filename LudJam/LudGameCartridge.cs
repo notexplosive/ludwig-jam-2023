@@ -17,11 +17,24 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     }
 
     public override CartridgeConfig CartridgeConfig => new(new Point(1920, 1080));
+    public static Scale2D ActorScale => new(new Vector2(0.25f, 0.25f));
 
     public IEnumerable<ILoadEvent> LoadEvents(Painter painter)
     {
         yield return new AssetLoadEvent("Sheet",
-            () => new GridBasedSpriteSheet(Client.Assets.GetTexture("cat/sheet"), new Point(511)));
+            () => new GridBasedSpriteSheet(Client.Assets.GetTexture("cat/sheet"),
+                new Point(LudEditorCartridge.TextureFrameSize)));
+
+        yield return new AssetLoadEvent("Brick",
+            () => new TextureAsset(Client.Graphics.CropTexture(
+                new Rectangle(0, 0, LudEditorCartridge.TextureFrameSize, LudEditorCartridge.TextureFrameSize),
+                Client.Assets.GetTexture("cat/sheet"))));
+
+        yield return new AssetLoadEvent("Background",
+            () => new TextureAsset(Client.Graphics.CropTexture(
+                new Rectangle(LudEditorCartridge.TextureFrameSize, 0, LudEditorCartridge.TextureFrameSize,
+                    LudEditorCartridge.TextureFrameSize),
+                Client.Assets.GetTexture("cat/sheet"))));
     }
 
     public override void OnCartridgeStarted()
