@@ -6,6 +6,7 @@ using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Data;
 using Fenestra;
+using Fenestra.Components;
 using FenestraSceneGraph;
 using FenestraSceneGraph.Components;
 using Microsoft.Xna.Framework;
@@ -17,7 +18,7 @@ namespace LudJam;
 public class Level
 {
     private Actor? _cat;
-    private Actor? _spawn;
+    private Actor? _player;
 
     public Level()
     {
@@ -48,6 +49,7 @@ public class Level
                 return new WallData
                     {X = rect.X, Y = rect.Y, Width = rect.Width, Height = rect.Height};
             });
+            wall.AddComponent<Solid>();
         });
     }
 
@@ -66,7 +68,7 @@ public class Level
         Scene.Update(dt);
     }
 
-    public void SetCatPosition(Vector2 position)
+    public void SetCatPosition(Vector2 position, bool isGame)
     {
         if (_cat == null)
         {
@@ -77,30 +79,42 @@ public class Level
                 _cat.Depth = Depth.Front + 100;
                 _cat.AddComponent<EditorSerializable>().Init(actor => new CatData {X = actor.Position.X, Y = actor.Position.Y});
                 _cat.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 9);
+
+                if (isGame)
+                {
+                    _cat.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize * LudGameCartridge.ActorScale.Value.X),DrawOrigin.Center);
+                }
             });
         }
 
         Scene.AddDeferredAction(() => { _cat!.Position = position; });
     }
 
-    public void SetSpawnPosition(Vector2 position)
+    public void SetSpawnPosition(Vector2 position, bool isGame)
     {
-        if (_spawn == null)
+        if (_player == null)
         {
             Scene.AddDeferredAction(() =>
             {
-                _spawn = Scene.AddNewActor();
-                _spawn.Scale = LudGameCartridge.ActorScale;
-                _spawn.Depth = Depth.Front + 100;
-                _spawn.AddComponent<EditorSerializable>().Init(actor => new SpawnData {X = actor.Position.X, Y = actor.Position.Y});
-                _spawn.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3);
+                _player = Scene.AddNewActor();
+                _player.Scale = LudGameCartridge.ActorScale;
+                _player.Depth = Depth.Front + 100;
+                _player.AddComponent<EditorSerializable>().Init(actor => new SpawnData {X = actor.Position.X, Y = actor.Position.Y});
+                _player.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3);
+
+                if (isGame)
+                {
+                    _player.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize* LudGameCartridge.ActorScale.Value.X),DrawOrigin.Center);
+                    _player.AddComponent<SimplePhysics>();
+                    _player.AddComponent<PlayerMovement>();
+                }
             });
         }
 
-        Scene.AddDeferredAction(() => { _spawn!.Position = position; });
+        Scene.AddDeferredAction(() => { _player!.Position = position; });
     }
 
-    public Level LoadFromJson(string text)
+    public Level LoadFromJson(string text, bool isGame = false)
     {
         try
         {
@@ -119,7 +133,7 @@ public class Level
 
             foreach (var item in data)
             {
-                item.AddToLevel(this);
+                item.AddToLevel(this, isGame);
             }
         }
         catch (Exception e)
@@ -151,9 +165,9 @@ public class Level
     {
         public string Name => "Cat";
 
-        public void AddToLevel(Level level)
+        public void AddToLevel(Level level, bool isGame)
         {
-            level.SetCatPosition(new Vector2(X,Y));
+            level.SetCatPosition(new Vector2(X,Y), isGame);
         }
 
         public float X { get; set; }
@@ -164,9 +178,9 @@ public class Level
     {
         public string Name => "Spawn";
 
-        public void AddToLevel(Level level)
+        public void AddToLevel(Level level, bool isGame)
         {
-            level.SetSpawnPosition(new Vector2(X,Y));
+            level.SetSpawnPosition(new Vector2(X,Y), isGame);
         }
 
         public float X { get; set; }
@@ -177,7 +191,7 @@ public class Level
     {
         public string Name => "Wall";
 
-        public void AddToLevel(Level level)
+        public void AddToLevel(Level level, bool isGame)
         {
             level.AddWall(new Rectangle(X, Y, Width, Height));
         }

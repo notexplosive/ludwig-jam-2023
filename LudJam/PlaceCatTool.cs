@@ -16,7 +16,7 @@ public class PlaceCatTool : IEditorTool
         
         if (input.Mouse.GetButton(MouseButton.Left, true).IsDown)
         {
-            level.SetCatPosition(input.Mouse.Position(hitTestStack.WorldMatrix));
+            level.SetCatPosition(input.Mouse.Position(hitTestStack.WorldMatrix), false);
         }
     }
 

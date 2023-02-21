@@ -16,7 +16,7 @@ public class PlaceSpawnTool : IEditorTool
         
         if (input.Mouse.GetButton(MouseButton.Left, true).IsDown)
         {
-            level.SetSpawnPosition(input.Mouse.Position(hitTestStack.WorldMatrix));
+            level.SetSpawnPosition(input.Mouse.Position(hitTestStack.WorldMatrix), false);
         }
     }
 

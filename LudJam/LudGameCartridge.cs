@@ -8,6 +8,7 @@ using ExplogineMonoGame.Data;
 using Fenestra;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace LudJam;
 
@@ -58,7 +59,8 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         if (i < LevelSequence.Length)
         {
             var levelName = LevelSequence[i];
-            return new Level().LoadFromJson(G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{levelName}.json"));
+            var levelData = G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{levelName}.json");
+            return new Level().LoadFromJson(levelData, true);
         }
         else
         {
@@ -83,6 +85,11 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
         _currentLevel.Scene.UpdateInput(input, hitTestStack);
+
+        if (input.Keyboard.GetButton(Keys.R, true).WasPressed)
+        {
+            _currentLevel = LoadLevel(0);
+        }
     }
 
     public override void Unload()

@@ -1,13 +1,11 @@
-﻿using System;
-using ExplogineCore.Data;
+﻿using ExplogineCore.Data;
 using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Data;
-using FenestraSceneGraph;
-using FenestraSceneGraph.Components;
+using Fenestra.Components;
 using Microsoft.Xna.Framework;
 
-namespace Fenestra.Components;
+namespace FenestraSceneGraph.Components;
 
 public class SpriteRenderer : BaseComponent
 {
