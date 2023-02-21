@@ -28,13 +28,16 @@ public class PlayerMovement : BaseComponent
 
     public override void Draw(Painter painter)
     {
-        if (IsMeaningfullyDragging)
+        if (IsDraggingAtAll)
         {
             var angle = DragDelta.GetAngleFromUnitX();
-            Actor.Angle = angle + MathF.PI;
 
-            painter.DrawLine(_drag.StartingValue, _drag.StartingValue + _drag.TotalDelta,
-                new LineDrawSettings {Thickness = 2});
+            if (IsMeaningfullyDragging)
+            {
+                Actor.Angle = angle + MathF.PI;
+                painter.DrawLine(_drag.StartingValue, _drag.StartingValue + _drag.TotalDelta,
+                    new LineDrawSettings {Thickness = 2});
+            }
 
             // predict arc
             var velocity = CalculateVelocityAfterJump();
@@ -47,7 +50,8 @@ public class PlayerMovement : BaseComponent
                 position += velocity * dt;
                 velocity += SimplePhysics.Gravity * dt;
 
-                if ((position - Actor.Position).Length() > 60)
+                var lineIsOutsidePlayer = (position - Actor.Position).Length() > 60;
+                if (lineIsOutsidePlayer && i % 2 == 0)
                 {
                     painter.DrawLine(previousPosition, position, new LineDrawSettings {Thickness = 3});
                 }

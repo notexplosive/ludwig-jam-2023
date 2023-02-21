@@ -79,7 +79,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void Update(float dt)
     {
-        _currentLevel.Scene.Update(dt);
+        _currentLevel.Scene.Update(dt * 3);
     }
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
