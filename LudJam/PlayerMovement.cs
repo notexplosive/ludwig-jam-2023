@@ -1,5 +1,7 @@
 ﻿using System;
+using ExplogineCore.Data;
 using ExplogineMonoGame;
+using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Data;
 using ExplogineMonoGame.Input;
 using Fenestra.Components;
@@ -11,11 +13,13 @@ namespace LudJam;
 
 public class PlayerMovement : BaseComponent
 {
+    private readonly BoundingRectangle _boundingRect;
     private readonly Drag<Vector2> _drag;
     private readonly SimplePhysics _physics;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
+        _boundingRect = RequireComponent<BoundingRectangle>();
         _physics = RequireComponent<SimplePhysics>();
         _drag = new Drag<Vector2>();
         _physics.IsGravityEnabled = false;
@@ -29,7 +33,55 @@ public class PlayerMovement : BaseComponent
 
     public override void Update(float dt)
     {
-        
+        if (!_physics.IsFrozen)
+        {
+            foreach (var solid in Actor.Scene.GetAllComponentsMatching<Solid>())
+            {
+                var otherRect = solid.Rectangle;
+                var myRect = _boundingRect.Rectangle;
+                if (solid.Rectangle.Intersects(_boundingRect))
+                {
+                    // figure out which side we hit in this awful (but extremely cheap) way
+                    var newVelocity = _physics.Velocity;
+                    var topDifference = Math.Abs(otherRect.Top - myRect.Bottom);
+                    var bottomDifference = Math.Abs(otherRect.Bottom - myRect.Top);
+                    var leftDifference = Math.Abs(otherRect.Left - myRect.Right);
+                    var rightDifference = Math.Abs(otherRect.Right - myRect.Left);
+                    var minTopBottom = Math.Min(topDifference, bottomDifference);
+                    var minLeftRight = Math.Min(leftDifference, rightDifference);
+                    var totalMin = Math.Min(minTopBottom, minLeftRight);
+
+                    // ReSharper disable CompareOfFloatsByEqualityOperator
+                    if (totalMin == minTopBottom)
+                    {
+                        newVelocity.Y = -newVelocity.Y;
+                    }
+
+                    if (totalMin == minLeftRight)
+                    {
+                        newVelocity.X = -newVelocity.X;
+                    }
+                    // ReSharper restore CompareOfFloatsByEqualityOperator
+
+                    var scene = Actor.Scene;
+                    Actor.DestroyDeferred();
+                    Actor.Scene.AddDeferredAction(() =>
+                    {
+                        var debris = scene.AddNewActor();
+                        debris.Angle = Actor.Angle;
+                        debris.Position = Actor.Position;
+                        debris.Depth = Depth.Front + 10;
+                        debris.Scale = Actor.Scale;
+
+                        var phys = debris.AddComponent<SimplePhysics>().Init(newVelocity / 2f);
+                        phys.TimeScale = _physics.TimeScale;
+                        debris.AddComponent<SpriteFrameRenderer>()
+                            .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8);
+                        debris.AddComponent<RandomSpin>().Init(newVelocity.Normalized().X / 50f);
+                    });
+                }
+            }
+        }
     }
 
     public override void Draw(Painter painter)
@@ -48,7 +100,7 @@ public class PlayerMovement : BaseComponent
             // predict arc
             var velocity = CalculateVelocityAfterJump();
             var position = Actor.Position;
-            var dt = 1/60f;
+            var dt = 1 / 60f;
 
             for (var i = 0; i < 512; i++)
             {

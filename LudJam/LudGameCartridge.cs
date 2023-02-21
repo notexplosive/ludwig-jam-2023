@@ -14,14 +14,14 @@ namespace LudJam;
 
 public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 {
-    private Level _currentLevel;
+    private Level _currentLevel = null!;
     private Camera _camera = new Camera(new Vector2(1920, 1080));
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
     }
 
-    public override CartridgeConfig CartridgeConfig => new(new Point(1920, 1080), SamplerState.PointWrap);
+    public override CartridgeConfig CartridgeConfig => new(new Point(1920, 1080), SamplerState.AnisotropicWrap);
     public static Scale2D ActorScale => new(new Vector2(0.25f, 0.25f));
 
     public IEnumerable<ILoadEvent> LoadEvents(Painter painter)

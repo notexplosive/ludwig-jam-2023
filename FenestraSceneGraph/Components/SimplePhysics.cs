@@ -20,9 +20,10 @@ public class SimplePhysics : BaseComponent
     public bool IsGravityEnabled { get; set; } = true;
     public bool IsFrozen => _freezeTimer > 0 || _freezeSemaphore > 0;
 
-    public void Init(Vector2 startingVelocity)
+    public SimplePhysics Init(Vector2 startingVelocity)
     {
         Velocity = startingVelocity;
+        return this;
     }
 
     public void RaiseFreezeSemaphore()
