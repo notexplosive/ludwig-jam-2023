@@ -104,7 +104,7 @@ public class Level
 
                 if (isGame)
                 {
-                    _player.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize* LudGameCartridge.ActorScale.Value.X),DrawOrigin.Center);
+                    _player.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize* LudGameCartridge.ActorScale.Value.X) / 2f,DrawOrigin.Center);
                     _player.AddComponent<SimplePhysics>();
                     _player.AddComponent<PlayerMovement>();
                 }

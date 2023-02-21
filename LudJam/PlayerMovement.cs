@@ -19,12 +19,18 @@ public class PlayerMovement : BaseComponent
         _physics = RequireComponent<SimplePhysics>();
         _drag = new Drag<Vector2>();
         _physics.IsGravityEnabled = false;
+        _physics.TimeScale = 3;
     }
 
     public bool IsDraggingAtAll => _drag.IsDragging;
     public bool IsMeaningfullyDragging => IsDraggingAtAll && _drag.TotalDelta.Length() > 5;
     public Vector2 DragDelta => _drag.TotalDelta;
     public Vector2 JumpImpulseVelocity => -DragDelta * 2f;
+
+    public override void Update(float dt)
+    {
+        
+    }
 
     public override void Draw(Painter painter)
     {
@@ -42,7 +48,7 @@ public class PlayerMovement : BaseComponent
             // predict arc
             var velocity = CalculateVelocityAfterJump();
             var position = Actor.Position;
-            var dt = 1 / 60f;
+            var dt = 1/60f;
 
             for (var i = 0; i < 512; i++)
             {

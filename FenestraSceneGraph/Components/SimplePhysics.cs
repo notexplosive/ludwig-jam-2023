@@ -59,6 +59,8 @@ public class SimplePhysics : BaseComponent
 
     public override void Update(float dt)
     {
+        dt *= TimeScale;
+        
         if (IsFrozen)
         {
             _freezeTimer -= dt;
@@ -73,6 +75,8 @@ public class SimplePhysics : BaseComponent
             Velocity += SimplePhysics.Gravity * dt;
         }
     }
+
+    public float TimeScale { get; set; } = 1f;
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
