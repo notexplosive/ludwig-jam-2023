@@ -16,6 +16,18 @@
 #begin cat/canyon.json
 /copy:cat/canyon.json
 
+#begin cat/crashtroid-xenon-low.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/crashtroid-xenon-low.ogg
+
+#begin cat/crashtroid-xenon.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/crashtroid-xenon.ogg
+
 #begin cat/foob.json
 /copy:cat/foob.json
 

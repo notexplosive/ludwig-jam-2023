@@ -4,6 +4,7 @@ using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Data;
 using ExplogineMonoGame.Input;
+using ExTween;
 using Fenestra.Components;
 using FenestraSceneGraph;
 using FenestraSceneGraph.Components;
@@ -15,12 +16,18 @@ public class PlayerMovement : BaseComponent
 {
     private readonly BoundingRectangle _boundingRect;
     private readonly Drag<Vector2> _drag;
+    private readonly TweenableFloat _flameHeight = new();
+    private readonly SequenceTween _flameTween = new();
     private readonly SimplePhysics _physics;
+    private readonly SpriteFrameRenderer _spriteFrameRenderer;
+    private float _elapsedTime;
+    private float _mostRecentMovedAngle;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
         _boundingRect = RequireComponent<BoundingRectangle>();
         _physics = RequireComponent<SimplePhysics>();
+        _spriteFrameRenderer = RequireComponent<SpriteFrameRenderer>();
         _drag = new Drag<Vector2>();
         _physics.IsGravityEnabled = false;
         _physics.TimeScale = 3;
@@ -33,6 +40,8 @@ public class PlayerMovement : BaseComponent
 
     public override void Update(float dt)
     {
+        _flameTween.Update(dt);
+        _elapsedTime += dt;
         if (!_physics.IsFrozen)
         {
             foreach (var solid in Actor.Scene.GetAllComponentsMatching<Solid>())
@@ -88,6 +97,8 @@ public class PlayerMovement : BaseComponent
     {
         if (IsDraggingAtAll)
         {
+            _spriteFrameRenderer.Frame = 3;
+
             var angle = DragDelta.GetAngleFromUnitX();
 
             if (IsMeaningfullyDragging)
@@ -119,7 +130,23 @@ public class PlayerMovement : BaseComponent
         if (!IsDraggingAtAll)
         {
             Actor.Angle = _physics.Velocity.GetAngleFromUnitX();
+            _mostRecentMovedAngle = Actor.Angle;
+            _spriteFrameRenderer.Frame = 4;
         }
+
+        // draw flame
+        var scale = Actor.Scale.Value;
+        var polar = Vector2Extensions.Polar(0, _mostRecentMovedAngle);
+        Client.Assets.GetAsset<SpriteSheet>("Sheet").DrawFrameAtPosition(painter, 2, Actor.Position - polar,
+            new Scale2D(new Vector2(scale.X * 0.8f, scale.Y * _flameHeight)),
+            new DrawSettings
+            {
+                Origin = new DrawOrigin(new Vector2(LudEditorCartridge.TextureFrameSize / 2f,
+                    LudEditorCartridge.TextureFrameSize)),
+                Angle = _mostRecentMovedAngle - MathF.PI / 2f,
+                Depth = Actor.Depth + 1, Color = Color.OrangeRed,
+                Flip = new XyBool(MathF.Sin(_elapsedTime * 30) > 0, false)
+            });
     }
 
     private Vector2 CalculateVelocityAfterJump()
@@ -139,6 +166,13 @@ public class PlayerMovement : BaseComponent
 
         if (input.Mouse.GetButton(MouseButton.Left).WasReleased)
         {
+            var maxHeight = JumpImpulseVelocity.Length() / 550;
+            var duration = JumpImpulseVelocity.Length() / 3000;
+            _flameTween.Clear();
+            _flameTween
+                .Add(new Tween<float>(_flameHeight, maxHeight, duration / 4f, Ease.SineFastSlow))
+                .Add(new Tween<float>(_flameHeight, 0, duration, Ease.SineFastSlow))
+                ;
             _physics.IsGravityEnabled = true;
             _physics.LowerFreezeSemaphore();
             Jump(JumpImpulseVelocity);
