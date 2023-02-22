@@ -126,6 +126,11 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
+        if (!_levelTransitionTween.IsDone())
+        {
+            return;
+        }
+        
         _currentLevel?.Scene.UpdateInput(input, hitTestStack);
 
         if (input.Keyboard.GetButton(Keys.R, true).WasPressed)
@@ -170,5 +175,12 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         _levelTransitionTween.Clear();
         _curtainPercent.Value = -1;
         _levelTransitionTween.Add(_curtainPercent.TweenTo(0f, G.TransitionDuration, Ease.QuadSlowFast));
+    }
+
+    public void ResetLevelAfterTimer()
+    {
+        ShowCurtain();
+        _levelTransitionTween.Add(new CallbackTween(LoadCurrentLevel));
+        _levelTransitionTween.Add(new CallbackTween(ClearCurtain));
     }
 }

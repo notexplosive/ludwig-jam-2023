@@ -23,7 +23,7 @@ public class PlayerMovement : BaseComponent
     private float _elapsedTime;
     private float _mostRecentMovedAngle;
     private float _smokeTimer;
-    private Level _level;
+    private Level _level = null!;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
@@ -131,6 +131,7 @@ public class PlayerMovement : BaseComponent
                         debris.AddComponent<SpriteFrameRenderer>()
                             .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8, G.CharacterColor.DimmedBy(0.2f));
                         debris.AddComponent<RandomSpin>().Init(newVelocity.Normalized().X / 50f);
+                        LudGameCartridge.Instance.ResetLevelAfterTimer();
                     });
                 }
             }
@@ -209,7 +210,7 @@ public class PlayerMovement : BaseComponent
 
         _drag.AddDelta(input.Mouse.Delta(hitTestStack.WorldMatrix));
 
-        if (input.Mouse.GetButton(MouseButton.Left).WasReleased)
+        if (input.Mouse.GetButton(MouseButton.Left).WasReleased && IsDraggingAtAll)
         {
             for (var i = 0; i < 20; i++)
             {
