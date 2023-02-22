@@ -31,6 +31,12 @@
 /processorParam:Quality=Best
 /build:cat/crashtroid-xenon.ogg
 
+#begin cat/firework.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/firework.ogg
+
 #begin cat/Font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -40,6 +46,12 @@
 
 #begin cat/foob.json
 /copy:cat/foob.json
+
+#begin cat/fwp.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/fwp.ogg
 
 #begin cat/game.json
 /copy:cat/game.json
@@ -55,6 +67,21 @@
 
 #begin cat/OFL.txt
 /copy:cat/OFL.txt
+
+#begin cat/over-under.json
+/copy:cat/over-under.json
+
+#begin cat/pained-cough.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/pained-cough.ogg
+
+#begin cat/pet.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/pet.ogg
 
 #begin cat/Shadow.fx
 /importer:EffectImporter
@@ -73,6 +100,21 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:cat/sheet.png
+
+#begin cat/snap.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/snap.ogg
+
+#begin cat/spark.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/spark.ogg
+
+#begin cat/stairway.json
+/copy:cat/stairway.json
 
 #begin engine/bubbles.ogg
 /importer:OggImporter

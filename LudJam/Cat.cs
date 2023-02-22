@@ -68,11 +68,16 @@ public class Cat : BaseComponent
         void TransitionFrameTo(int frame)
         {
             _tween.Add(_handScale.TweenTo(new Vector2(1, 0.75f), 0.1f, Ease.QuadSlowFast));
-            _tween.Add(new CallbackTween(() => _handFrame = frame));
+            _tween.Add(new CallbackTween(() =>
+            {
+                _handFrame = frame;
+                G.StopThenPlaySound("cat/fwp", new SoundEffectSettings{Volume = 1f});
+            }));
             _tween.Add(_handScale.TweenTo(new Vector2(1, 1.25f), 0.1f, Ease.QuadFastSlow));
             _tween.Add(_handScale.TweenTo(new Vector2(1, 1), 0.2f, Ease.QuadFastSlow));
         }
 
+        G.Music.FadeToOff(2f);
         G.ImpactFreeze(0.05f);
         var abovePosition = Actor.Position + new Vector2(32, -128);
         var moreAbovePosition = Actor.Position + new Vector2(32, -128 - 64);
@@ -82,13 +87,14 @@ public class Cat : BaseComponent
         _tween.Add(_handPosition.TweenTo(abovePosition, 0.5f, Ease.CubicFastSlow));
         TransitionFrameTo(10);
 
-        _tween.Add(_handPosition.TweenTo(pettingPosition, 0.25f, Ease.CubicFastSlow));
+        _tween.Add(_handPosition.TweenTo(pettingPosition, 0.1f, Ease.CubicFastSlow));
 
-        var totalNumberOfPets = 3;
+        var totalNumberOfPets = 5;
         for (var i = 0; i < totalNumberOfPets; i++)
         {
-            _tween.Add(_handAngle.TweenTo(-MathF.PI / 8f, 0.15f, Ease.Linear));
-            _tween.Add(_handAngle.TweenTo(MathF.PI / 8f, 0.15f, Ease.Linear));
+            _tween.Add(_handAngle.TweenTo(-MathF.PI / 8f, 0.1f, Ease.Linear));
+            _tween.Add(new CallbackTween(() => G.StopThenPlaySound("cat/pet", new SoundEffectSettings {Volume = 1f})));
+            _tween.Add(_handAngle.TweenTo(0, 0.1f, Ease.Linear));
         }
 
         _tween.Add(_handAngle.TweenTo(0, 0.15f, Ease.Linear));

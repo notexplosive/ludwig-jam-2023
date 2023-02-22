@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using ExplogineCore;
+using ExplogineCore.Data;
 using ExplogineMonoGame;
 using ExplogineMonoGame.Data;
 using Microsoft.Xna.Framework;
@@ -56,5 +57,20 @@ public static class G
     public static void ImpactFreeze(float seconds)
     {
         G.ImpactTimer = seconds;
+    }
+
+    public static void StopThenPlaySound(string soundPath, SoundEffectSettings settings)
+    {
+        Client.Assets.GetSoundEffectInstance(soundPath).Stop();
+        PlaySoundEffect(soundPath,settings);
+    }
+
+    public static void PlaySoundEffect(string soundPath, SoundEffectSettings settings)
+    {
+        var sound = Client.Assets.GetSoundEffectInstance(soundPath);
+        sound.Volume = settings.Volume;
+        sound.Pan = settings.Pan;
+        sound.Pitch = settings.Pitch;
+        sound.Play();
     }
 }

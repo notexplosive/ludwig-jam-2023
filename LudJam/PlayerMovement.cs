@@ -25,6 +25,7 @@ public class PlayerMovement : BaseComponent
     private float _smokeTimer;
     private Level _level = null!;
     private Vector2 _mostRecentVelocity;
+    private Vector2 _previousDragDelta;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
@@ -67,6 +68,14 @@ public class PlayerMovement : BaseComponent
         _flameTween.Update(dt);
         _elapsedTime += dt;
 
+        if (_previousDragDelta != DragDelta)
+        {
+            // we don't need to stop then play here because we just play the sound when available
+            G.PlaySoundEffect("cat/spark", new SoundEffectSettings{Volume = 0.25f});
+        }
+        
+        _previousDragDelta = DragDelta;
+        
         if (IsMeaningfullyDragging)
         {
             var pullPercent = DragDelta.Length() / MaxDelta;
@@ -148,6 +157,8 @@ public class PlayerMovement : BaseComponent
 
                     G.ImpactFreeze(0.05f);
 
+                    G.StopThenPlaySound("cat/pained-cough", new SoundEffectSettings{Volume = 1f});
+                    G.Music.FadeToLow(0.1f);
                     SpawnDeadBody(newVelocity);
                 }
             }
@@ -241,6 +252,7 @@ public class PlayerMovement : BaseComponent
     {
         if (input.Mouse.GetButton(MouseButton.Left).WasPressed)
         {
+            G.StopThenPlaySound("cat/snap", new SoundEffectSettings());
             _physics.RaiseFreezeSemaphore();
             _drag.Start(input.Mouse.Position());
         }
@@ -249,6 +261,7 @@ public class PlayerMovement : BaseComponent
 
         if (input.Mouse.GetButton(MouseButton.Left).WasReleased && IsDraggingAtAll)
         {
+            G.StopThenPlaySound("cat/firework", new SoundEffectSettings());
             G.Music.FadeToMain();
             for (var i = 0; i < 20; i++)
             {

@@ -73,6 +73,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     private void LoadCurrentLevel()
     {
+        G.Music.FadeToMain(1f);
         if (_isEditorSession)
         {
             LoadCachedEditorLevel();
