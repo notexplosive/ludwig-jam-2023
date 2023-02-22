@@ -24,6 +24,7 @@ public class PlayerMovement : BaseComponent
     private float _mostRecentMovedAngle;
     private float _smokeTimer;
     private Level _level = null!;
+    private Vector2 _mostRecentVelocity;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
@@ -41,7 +42,18 @@ public class PlayerMovement : BaseComponent
     /// <summary>
     /// this should be the only thing referencing _drag.TotalDrag
     /// </summary>
-    public Vector2 DragDelta => _drag.TotalDelta.Normalized() * MathF.Min(MaxDelta, _drag.TotalDelta.Length());
+    public Vector2 DragDelta
+    {
+        get
+        {
+            if (_drag.TotalDelta.Length() > 0)
+            {
+                return _drag.TotalDelta.Normalized() * MathF.Min(MaxDelta, _drag.TotalDelta.Length());
+            }
+
+            return Vector2.Zero;
+        }
+    }
 
     public float MaxDelta => 500;
 
@@ -49,6 +61,9 @@ public class PlayerMovement : BaseComponent
 
     public override void Update(float dt)
     {
+        LudGameCartridge.Instance.AddCameraFocusPoint(Actor.Position);
+        LudGameCartridge.Instance.AddCameraFocusPoint(Actor.Position + JumpImpulseVelocity);
+
         _flameTween.Update(dt);
         _elapsedTime += dt;
 
@@ -138,6 +153,7 @@ public class PlayerMovement : BaseComponent
                         debris.AddComponent<SpriteFrameRenderer>()
                             .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8, G.CharacterColor.DimmedBy(0.2f));
                         debris.AddComponent<RandomSpin>().Init(newVelocity.Normalized().X / 50f);
+                        debris.AddComponent<CameraFocusPoint>();
                         LudGameCartridge.Instance.ResetLevelAfterTimer();
                     });
                 }
@@ -183,6 +199,7 @@ public class PlayerMovement : BaseComponent
         {
             Actor.Angle = _physics.Velocity.GetAngleFromUnitX();
             _mostRecentMovedAngle = Actor.Angle;
+            _mostRecentVelocity = _physics.Velocity;
             _spriteFrameRenderer.Frame = 4;
         }
 

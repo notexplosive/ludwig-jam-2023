@@ -22,6 +22,8 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     private readonly TweenableFloat _curtainPercent = new();
     private readonly SequenceTween _levelTransitionTween = new();
     private float _totalElapsedTime;
+    private List<Vector2> _cameraFocusObjects = new();
+    private RectangleF _cameraTargetRect;
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
@@ -87,6 +89,8 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
         painter.BeginSpriteBatch(_camera.CanvasToScreen);
         _currentLevel?.Scene.DrawContent(painter);
+        
+        // painter.DrawLineRectangle(_cameraTargetRect, new LineDrawSettings{Thickness = 10});
         painter.EndSpriteBatch();
         
         painter.BeginSpriteBatch();
@@ -112,6 +116,36 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void Update(float dt)
     {
+        if (_cameraFocusObjects.Count > 0)
+        {
+            var totalPosition = Vector2.Zero;
+
+            foreach (var position in _cameraFocusObjects)
+            {
+                totalPosition += position;
+            }
+
+            var averagePosition = totalPosition / _cameraFocusObjects.Count;
+
+            var longestLength = 0f;
+            foreach (var position in _cameraFocusObjects)
+            {
+                longestLength = MathF.Max(longestLength, (averagePosition - position).Length());
+            }
+
+            var totalRectangle = new RectangleF(averagePosition, Vector2.Zero);
+            totalRectangle = totalRectangle.Inflated(16, 9);
+            totalRectangle = totalRectangle.InflatedMaintainAspectRatio(longestLength);
+            
+            // safe zone
+            totalRectangle = totalRectangle.InflatedMaintainAspectRatio(100);
+            
+            _cameraTargetRect = totalRectangle;
+            _cameraFocusObjects.Clear();
+        }
+        
+        _camera.ViewBounds = TweenableRectangleF.LerpRectangleF(_camera.ViewBounds, _cameraTargetRect, 0.1f);
+
         _totalElapsedTime += dt;
         _levelTransitionTween.Update(dt);
 
@@ -130,8 +164,9 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         {
             return;
         }
-        
-        _currentLevel?.Scene.UpdateInput(input, hitTestStack);
+
+        var worldHitTestStack = hitTestStack.AddLayer(_camera.ScreenToCanvas, Depth.Middle);
+        _currentLevel?.Scene.UpdateInput(input, worldHitTestStack);
 
         if (input.Keyboard.GetButton(Keys.R, true).WasPressed)
         {
@@ -182,5 +217,10 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         ShowCurtain();
         _levelTransitionTween.Add(new CallbackTween(LoadCurrentLevel));
         _levelTransitionTween.Add(new CallbackTween(ClearCurtain));
+    }
+
+    public void AddCameraFocusPoint(Vector2 point)
+    {
+            _cameraFocusObjects.Add(point);
     }
 }

@@ -47,8 +47,11 @@ public class Cat : BaseComponent
 
     public override void Update(float dt)
     {
+        LudGameCartridge.Instance.AddCameraFocusPoint(Actor.Position);
+        
         if (_handVisible)
         {
+            LudGameCartridge.Instance.AddCameraFocusPoint(_handPosition);
             _tween.Update(dt);
         }
     }
