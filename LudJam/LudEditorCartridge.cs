@@ -40,6 +40,8 @@ public class LudEditorCartridge : NoProviderCartridge
 
     public override void OnCartridgeStarted()
     {
+        G.Music.FadeToOff();
+        
         var bigFont = Client.Assets.GetFont("engine/logo-font", 72);
         var smallFont = Client.Assets.GetFont("engine/logo-font", 32);
         _theme = new SimpleGuiTheme(Color.White, Color.Black, Color.Transparent, smallFont);

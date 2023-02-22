@@ -69,6 +69,8 @@ public class PlayerMovement : BaseComponent
 
         if (IsMeaningfullyDragging)
         {
+            var pullPercent = DragDelta.Length() / MaxDelta;
+            G.Music.SetLowPercent(pullPercent);
             _spriteFrameRenderer.Offset = LudGameCartridge.GetRandomVector(Client.Random.Dirty) * JumpImpulseVelocity / 100;
         }
         else
@@ -247,6 +249,7 @@ public class PlayerMovement : BaseComponent
 
         if (input.Mouse.GetButton(MouseButton.Left).WasReleased && IsDraggingAtAll)
         {
+            G.Music.FadeToMain();
             for (var i = 0; i < 20; i++)
             {
                 SpawnSmokeParticle(-JumpImpulseVelocity, G.JumpParticleColor);

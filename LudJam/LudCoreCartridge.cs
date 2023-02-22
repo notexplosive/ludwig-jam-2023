@@ -22,11 +22,17 @@ public class LudCoreCartridge : MultiCartridge
     public override void OnCartridgeStarted()
     {
         base.OnCartridgeStarted();
+        G.Music.Initialize();
         
         if (CurrentCartridge is DispatchCartridge dispatch)
         {
             dispatch.Go(this);
         }
+    }
+
+    protected override void BeforeUpdate(float dt)
+    {
+        G.Music.UpdateTween(dt);
     }
 
     private class DispatchCartridge : Cartridge, ICommandLineParameterProvider

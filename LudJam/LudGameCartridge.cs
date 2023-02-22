@@ -65,6 +65,8 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void OnCartridgeStarted()
     {
+        G.Music.FadeToMain();
+        
         LoadCurrentLevel();
         ClearCurtain();
     }
