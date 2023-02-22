@@ -22,6 +22,7 @@ public class PlayerMovement : BaseComponent
     private readonly SpriteFrameRenderer _spriteFrameRenderer;
     private float _elapsedTime;
     private float _mostRecentMovedAngle;
+    private float _smokeTimer;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
@@ -42,8 +43,33 @@ public class PlayerMovement : BaseComponent
     {
         _flameTween.Update(dt);
         _elapsedTime += dt;
+
+        if (IsMeaningfullyDragging)
+        {
+            _spriteFrameRenderer.Offset = LudGameCartridge.GetRandomVector(Client.Random.Dirty) * JumpImpulseVelocity / 100;
+        }
+        else
+        {
+            _spriteFrameRenderer.Offset = Vector2.Zero;
+        }
+        
         if (!_physics.IsFrozen)
         {
+            if (_physics.Velocity.Length() > 0)
+            {
+                _smokeTimer -= dt;
+
+                if (_smokeTimer < 0)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        SpawnSmokeParticle(-_physics.Velocity / 2f, G.JumpParticleColor);
+                    }
+
+                    _smokeTimer = 0.05f;
+                }
+            }
+
             foreach (var solid in Actor.Scene.GetAllComponentsMatching<Solid>())
             {
                 var otherRect = solid.Rectangle;
@@ -73,6 +99,13 @@ public class PlayerMovement : BaseComponent
                     // ReSharper restore CompareOfFloatsByEqualityOperator
 
                     var scene = Actor.Scene;
+                    for (var i = 0; i < 25; i++)
+                    {
+                        SpawnSmokeParticle(newVelocity, G.CharacterColor);
+                    }
+
+                    G.ImpactFreeze(0.05f);
+
                     Actor.DestroyDeferred();
                     Actor.Scene.AddDeferredAction(() =>
                     {
@@ -85,7 +118,7 @@ public class PlayerMovement : BaseComponent
                         var phys = debris.AddComponent<SimplePhysics>().Init(newVelocity / 2f);
                         phys.TimeScale = _physics.TimeScale;
                         debris.AddComponent<SpriteFrameRenderer>()
-                            .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8);
+                            .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8, G.CharacterColor.DimmedBy(0.2f));
                         debris.AddComponent<RandomSpin>().Init(newVelocity.Normalized().X / 50f);
                     });
                 }
@@ -144,13 +177,14 @@ public class PlayerMovement : BaseComponent
                 Origin = new DrawOrigin(new Vector2(LudEditorCartridge.TextureFrameSize / 2f,
                     LudEditorCartridge.TextureFrameSize)),
                 Angle = _mostRecentMovedAngle - MathF.PI / 2f,
-                Depth = Actor.Depth + 1, Color = Color.OrangeRed,
+                Depth = Actor.Depth + 1, Color = G.FlameColor,
                 Flip = new XyBool(MathF.Sin(_elapsedTime * 30) > 0, false)
             });
     }
 
     private Vector2 CalculateVelocityAfterJump()
     {
+        // extracted in case we do additive velocity later
         return JumpImpulseVelocity;
     }
 
@@ -166,6 +200,11 @@ public class PlayerMovement : BaseComponent
 
         if (input.Mouse.GetButton(MouseButton.Left).WasReleased)
         {
+            for (var i = 0; i < 20; i++)
+            {
+                SpawnSmokeParticle(-JumpImpulseVelocity, G.JumpParticleColor);
+            }
+
             var maxHeight = JumpImpulseVelocity.Length() / 550;
             var duration = JumpImpulseVelocity.Length() / 3000;
             _flameTween.Clear();
@@ -175,13 +214,37 @@ public class PlayerMovement : BaseComponent
                 ;
             _physics.IsGravityEnabled = true;
             _physics.LowerFreezeSemaphore();
-            Jump(JumpImpulseVelocity);
+
+            Jump();
             _drag.End();
         }
     }
 
-    private void Jump(Vector2 impulse)
+    private void Jump()
     {
         _physics.Velocity = CalculateVelocityAfterJump();
+    }
+
+    private void SpawnSmokeParticle(Vector2 trendingDirection, Color color)
+    {
+        Actor.Scene.AddDeferredAction(() =>
+        {
+            var particle = Actor.Scene.AddNewActor();
+            particle.Scale =
+                LudGameCartridge.ActorScale * (Client.Random.Dirty.NextSign() * Client.Random.Dirty.NextFloat() / 2f) +
+                new Scale2D(0.25f);
+            particle.Position = Actor.Position + LudGameCartridge.GetRandomVector(Client.Random.Dirty) *
+                Client.Random.Dirty.NextFloat() * 20f;
+
+            particle.AddComponent<SpriteFrameRenderer>()
+                .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 11, color);
+
+            particle.AddComponent<ShrinkToDeath>().Init(0.5f);
+            var randomDirection =
+                LudGameCartridge.GetRandomVector(Client.Random.Dirty) * Client.Random.Dirty.NextFloat() *
+                trendingDirection.Length() / 2f + trendingDirection;
+            var particlePhysics = particle.AddComponent<SimplePhysics>().Init(randomDirection);
+            particlePhysics.IsGravityEnabled = false;
+        });
     }
 }

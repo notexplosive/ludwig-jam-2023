@@ -78,7 +78,7 @@ public class Level
                 _cat.Scale = LudGameCartridge.ActorScale;
                 _cat.Depth = Depth.Front + 100;
                 _cat.AddComponent<EditorSerializable>().Init(actor => new CatData {X = actor.Position.X, Y = actor.Position.Y});
-                _cat.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 9);
+                _cat.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 9, G.CharacterColor);
 
                 if (isGame)
                 {
@@ -100,7 +100,7 @@ public class Level
                 _player.Scale = LudGameCartridge.ActorScale;
                 _player.Depth = Depth.Front + 100;
                 _player.AddComponent<EditorSerializable>().Init(actor => new SpawnData {X = actor.Position.X, Y = actor.Position.Y});
-                _player.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3);
+                _player.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3, G.CharacterColor);
 
                 if (isGame)
                 {

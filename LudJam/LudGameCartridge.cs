@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ExplogineCore;
+using ExplogineCore.Data;
 using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Cartridges;
@@ -79,6 +80,12 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void Update(float dt)
     {
+        if (G.ImpactTimer > 0)
+        {
+            G.ImpactTimer -= dt;
+            return;
+        }
+        
         _currentLevel.Scene.Update(dt);
     }
 
@@ -94,5 +101,11 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void Unload()
     {
+    }
+
+    public static Vector2 GetRandomVector(NoiseBasedRng random)
+    {
+        return random.NextPositiveVector2()
+            .StraightMultiply(new Vector2(random.NextSign(), random.NextSign()));
     }
 }

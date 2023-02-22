@@ -23,8 +23,8 @@ public static class G
     {
         // Draw background
         painter.BeginSpriteBatch();
-        var backgroundColor = ColorExtensions.FromRgbHex(0x333333);
-        var backgroundAccentColor = ColorExtensions.FromRgbHex(0x222222);
+        var backgroundColor = ColorExtensions.FromRgbHex(0x0D5D56);
+        var backgroundAccentColor = ColorExtensions.FromRgbHex(0x0C8346);
         var renderResolutionRect = renderResolution.ToRectangleF();
         painter.DrawRectangle(renderResolutionRect, new DrawSettings {Color = backgroundColor});
         painter.DrawAsRectangle(Client.Assets.GetTexture("Background"), renderResolutionRect,
@@ -36,4 +36,15 @@ public static class G
             });
         painter.EndSpriteBatch();
     }
+
+    public static Color JumpParticleColor => Color.Orange.DimmedBy(0.2f);
+    public static Color FlameColor => Color.OrangeRed;
+    public static Color CharacterColor => ColorExtensions.FromRgbHex(0xffffff);
+
+    public static void ImpactFreeze(float seconds)
+    {
+        G.ImpactTimer = seconds;
+    }
+
+    public static float ImpactTimer { get; set; }
 }
