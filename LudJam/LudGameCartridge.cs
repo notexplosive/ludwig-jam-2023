@@ -17,13 +17,13 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 {
     public static LudGameCartridge Instance = null!;
     private readonly Camera _camera = new(new Vector2(1920, 1080));
-    private Level? _currentLevel;
-    private int _currentLevelIndex;
+    private readonly List<Vector2> _cameraFocusObjects = new();
     private readonly TweenableFloat _curtainPercent = new();
     private readonly SequenceTween _levelTransitionTween = new();
-    private float _totalElapsedTime;
-    private List<Vector2> _cameraFocusObjects = new();
     private RectangleF _cameraTargetRect;
+    private Level? _currentLevel;
+    private int _currentLevelIndex;
+    private float _totalElapsedTime;
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
@@ -87,16 +87,24 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     {
         G.DrawBackground(painter, Runtime.Window.RenderResolution, _camera);
 
+        // only draw the drop shadow on release builds because shaders break hot reload (that sucks!)
+        painter.BeginSpriteBatch(_camera.CanvasToScreen * Matrix.CreateTranslation(new Vector3(new Vector2(10), 0)),
+            Client.Assets.GetEffect("cat/Shadow"));
+        _currentLevel?.Scene.DrawContent(painter);
+        painter.EndSpriteBatch();
+
         painter.BeginSpriteBatch(_camera.CanvasToScreen);
         _currentLevel?.Scene.DrawContent(painter);
-        
-        // painter.DrawLineRectangle(_cameraTargetRect, new LineDrawSettings{Thickness = 10});
         painter.EndSpriteBatch();
-        
+
         painter.BeginSpriteBatch();
         var safeAreaRect = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-20, -20);
-        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80), _currentLevel?.ParStatus() ?? "No level", safeAreaRect, Alignment.TopCenter, new DrawSettings{Color = _currentLevel.IsPassedPar ? Color.OrangeRed : Color.White, Depth = Depth.Middle});
-        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80), _currentLevel?.ParStatus() ?? "No level", safeAreaRect.Moved(new Vector2(2)), Alignment.TopCenter, new DrawSettings{Depth = Depth.Middle + 1, Color = Color.Black});
+        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
+            _currentLevel?.ParStatus() ?? "No level", safeAreaRect, Alignment.TopCenter,
+            new DrawSettings {Color = _currentLevel.IsPassedPar ? Color.OrangeRed : Color.White, Depth = Depth.Middle});
+        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
+            _currentLevel?.ParStatus() ?? "No level", safeAreaRect.Moved(new Vector2(2)), Alignment.TopCenter,
+            new DrawSettings {Depth = Depth.Middle + 1, Color = Color.Black});
         painter.EndSpriteBatch();
 
         painter.BeginSpriteBatch();
@@ -136,14 +144,14 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             var totalRectangle = new RectangleF(averagePosition, Vector2.Zero);
             totalRectangle = totalRectangle.Inflated(16, 9);
             totalRectangle = totalRectangle.InflatedMaintainAspectRatio(longestLength);
-            
+
             // safe zone
             totalRectangle = totalRectangle.InflatedMaintainAspectRatio(100);
-            
+
             _cameraTargetRect = totalRectangle;
             _cameraFocusObjects.Clear();
         }
-        
+
         _camera.ViewBounds = TweenableRectangleF.LerpRectangleF(_camera.ViewBounds, _cameraTargetRect, 0.1f);
 
         _totalElapsedTime += dt;
@@ -166,7 +174,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             var editor = LudCoreCartridge.Instance.SwapTo<LudEditorCartridge>();
             editor.LoadJson(_currentLevel.ToJson());
         }
-        
+
         if (!_levelTransitionTween.IsDone())
         {
             return;
@@ -224,6 +232,6 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public void AddCameraFocusPoint(Vector2 point)
     {
-            _cameraFocusObjects.Add(point);
+        _cameraFocusObjects.Add(point);
     }
 }

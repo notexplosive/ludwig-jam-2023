@@ -16,6 +16,9 @@
 #begin cat/canyon.json
 /copy:cat/canyon.json
 
+#begin cat/come-hither.json
+/copy:cat/come-hither.json
+
 #begin cat/crashtroid-xenon-low.ogg
 /importer:OggImporter
 /processor:SoundEffectProcessor
@@ -52,6 +55,12 @@
 
 #begin cat/OFL.txt
 /copy:cat/OFL.txt
+
+#begin cat/Shadow.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:cat/Shadow.fx
 
 #begin cat/sheet.png
 /importer:TextureImporter

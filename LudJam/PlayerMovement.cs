@@ -180,6 +180,13 @@ public class PlayerMovement : BaseComponent
         {
             _spriteFrameRenderer.Frame = 3;
 
+            var angle = DragDelta.GetAngleFromUnitX();
+
+            if (IsMeaningfullyDragging)
+            {
+                Actor.Angle = angle + MathF.PI;
+            }
+
             // predict arc
             var velocity = CalculateVelocityAfterJump();
             var position = Actor.Position;
