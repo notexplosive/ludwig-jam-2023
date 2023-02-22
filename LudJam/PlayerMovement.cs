@@ -36,8 +36,15 @@ public class PlayerMovement : BaseComponent
     }
 
     public bool IsDraggingAtAll => _drag.IsDragging;
-    public bool IsMeaningfullyDragging => IsDraggingAtAll && _drag.TotalDelta.Length() > 5;
-    public Vector2 DragDelta => _drag.TotalDelta;
+    public bool IsMeaningfullyDragging => IsDraggingAtAll && DragDelta.Length() > 5;
+    
+    /// <summary>
+    /// this should be the only thing referencing _drag.TotalDrag
+    /// </summary>
+    public Vector2 DragDelta => _drag.TotalDelta.Normalized() * MathF.Min(MaxDelta, _drag.TotalDelta.Length());
+
+    public float MaxDelta => 500;
+
     public Vector2 JumpImpulseVelocity => -DragDelta * 2f;
 
     public override void Update(float dt)
@@ -149,7 +156,7 @@ public class PlayerMovement : BaseComponent
             if (IsMeaningfullyDragging)
             {
                 Actor.Angle = angle + MathF.PI;
-                painter.DrawLine(_drag.StartingValue, _drag.StartingValue + _drag.TotalDelta,
+                painter.DrawLine(_drag.StartingValue, _drag.StartingValue + DragDelta,
                     new LineDrawSettings {Thickness = 2});
             }
 
