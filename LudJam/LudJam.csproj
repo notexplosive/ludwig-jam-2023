@@ -6,6 +6,7 @@
         <TieredCompilation>false</TieredCompilation>
         <PublishSingleFile>true</PublishSingleFile>
         <Nullable>enable</Nullable>
+        <AssemblyName>SuperPetTheCat</AssemblyName>
     </PropertyGroup>
     <PropertyGroup>
         <ApplicationManifest>app.manifest</ApplicationManifest>

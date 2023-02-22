@@ -9,6 +9,6 @@ var config = new WindowConfigWritable
 #if !DEBUG
     Fullscreen = true,
 #endif
-    Title = "NotExplosive.net"
+    Title = "Super Pet The Cat ~~ NotExplosive.net"
 };
 Bootstrap.Run(args, new WindowConfig(config), runtime => new LudCoreCartridge(runtime));
