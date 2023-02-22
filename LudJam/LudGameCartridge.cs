@@ -75,7 +75,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         {
             var levelName = LudGameCartridge.LevelSequence[i];
             var levelData = G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{levelName}.json");
-            return new Level().LoadFromJson(levelData, true);
+            return new Level().LoadFromJson(levelData, true).FinishLoadingLevelForGame();
         }
 
         throw new Exception("Ran out of levels! ... I need to make an outro screen");
@@ -87,6 +87,12 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
         painter.BeginSpriteBatch(_camera.CanvasToScreen);
         _currentLevel?.Scene.DrawContent(painter);
+        painter.EndSpriteBatch();
+        
+        painter.BeginSpriteBatch();
+        var safeAreaRect = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-20, -20);
+        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80), _currentLevel?.ParStatus() ?? "No level", safeAreaRect, Alignment.TopCenter, new DrawSettings{Color = _currentLevel.IsPassedPar ? Color.OrangeRed : Color.White, Depth = Depth.Middle});
+        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80), _currentLevel?.ParStatus() ?? "No level", safeAreaRect.Moved(new Vector2(2)), Alignment.TopCenter, new DrawSettings{Depth = Depth.Middle + 1, Color = Color.Black});
         painter.EndSpriteBatch();
 
         painter.BeginSpriteBatch();
@@ -150,7 +156,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     {
         _levelTransitionTween.Clear();
         _curtainPercent.Value = 0;
-        _levelTransitionTween.Add(_curtainPercent.TweenTo(1f, G.TransitionDuration, Ease.Linear));
+        _levelTransitionTween.Add(_curtainPercent.TweenTo(1f, G.TransitionDuration, Ease.QuadFastSlow));
     }
 
     public void TransitionToNextLevel()
@@ -163,7 +169,6 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     {
         _levelTransitionTween.Clear();
         _curtainPercent.Value = -1;
-        _levelTransitionTween.Add(_curtainPercent.TweenTo(0f, G.TransitionDuration, Ease.Linear));
-        _levelTransitionTween.Add(new WaitSecondsTween(0.5f));
+        _levelTransitionTween.Add(_curtainPercent.TweenTo(0f, G.TransitionDuration, Ease.QuadSlowFast));
     }
 }

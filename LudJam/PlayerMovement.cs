@@ -23,6 +23,7 @@ public class PlayerMovement : BaseComponent
     private float _elapsedTime;
     private float _mostRecentMovedAngle;
     private float _smokeTimer;
+    private Level _level;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
@@ -225,6 +226,7 @@ public class PlayerMovement : BaseComponent
             _physics.IsGravityEnabled = true;
             _physics.LowerFreezeSemaphore();
 
+            _level.IncrementStrokeCount();
             Jump();
             _drag.End();
         }
@@ -256,5 +258,10 @@ public class PlayerMovement : BaseComponent
             var particlePhysics = particle.AddComponent<SimplePhysics>().Init(randomDirection);
             particlePhysics.IsGravityEnabled = false;
         });
+    }
+
+    public void Init(Level level)
+    {
+        _level = level;
     }
 }

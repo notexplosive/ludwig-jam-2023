@@ -18,6 +18,21 @@ public class Level
 {
     private Actor? _cat;
     private Actor? _player;
+    private int _strokeCount;
+    private ParCounter? _parCounter;
+
+    public int ParStrokeCount
+    {
+        get
+        {
+            if (_parCounter != null)
+            {
+                return _parCounter.Par;
+            }
+
+            return 0;
+        }
+    }
 
     public Level()
     {
@@ -27,6 +42,7 @@ public class Level
 
     public Scene Scene { get; }
     public Dictionary<Actor, HoverState> HoverStates { get; set; } = new();
+    public bool IsPassedPar => _strokeCount > ParStrokeCount;
 
     private void WhenActorRemoved(Actor actor)
     {
@@ -106,7 +122,7 @@ public class Level
                 {
                     _player.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize* LudGameCartridge.ActorScale.Value.X) / 2f,DrawOrigin.Center);
                     _player.AddComponent<SimplePhysics>();
-                    _player.AddComponent<PlayerMovement>();
+                    _player.AddComponent<PlayerMovement>().Init(this);
                 }
             });
         }
@@ -200,5 +216,30 @@ public class Level
         public int Height { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
+    }
+
+    public string ParStatus()
+    {
+        return $"Par: {_strokeCount} / {ParStrokeCount}";
+    }
+
+    public void IncrementStrokeCount()
+    {
+        _strokeCount++;
+    }
+
+    public Level FinishLoadingLevelForGame()
+    {
+        foreach (var parCounter in Scene.GetAllComponentsMatching<ParCounter>())
+        {
+            _parCounter = parCounter;
+        }
+
+        if (_parCounter == null)
+        {
+            _parCounter = Scene.AddNewActor().AddComponent<ParCounter>();
+        }
+
+        return this;
     }
 }

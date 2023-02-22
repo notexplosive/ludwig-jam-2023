@@ -28,6 +28,13 @@
 /processorParam:Quality=Best
 /build:cat/crashtroid-xenon.ogg
 
+#begin cat/Font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:cat/Font.spritefont
+
 #begin cat/foob.json
 /copy:cat/foob.json
 
@@ -39,6 +46,12 @@
 
 #begin cat/level-sequence.txt
 /copy:cat/level-sequence.txt
+
+#begin cat/MochiyPopPOne-Regular.ttf
+/copy:cat/MochiyPopPOne-Regular.ttf
+
+#begin cat/OFL.txt
+/copy:cat/OFL.txt
 
 #begin cat/sheet.png
 /importer:TextureImporter
