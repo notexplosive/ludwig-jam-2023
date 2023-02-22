@@ -47,4 +47,7 @@ public static class G
     }
 
     public static float ImpactTimer { get; set; }
+    public static float TransitionDuration => 1f;
+    public static Color CurtainColor1 => ColorExtensions.FromRgbHex(0x0E131B);
+    public static Color CurtainColor2 => ColorExtensions.FromRgbHex(0x2B3A67);
 }

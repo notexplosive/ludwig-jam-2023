@@ -6,7 +6,7 @@ using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Cartridges;
 using ExplogineMonoGame.Data;
-using Fenestra;
+using ExTween;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -15,15 +15,23 @@ namespace LudJam;
 
 public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 {
-    private Level _currentLevel = null!;
-    private Camera _camera = new Camera(new Vector2(1920, 1080));
+    public static LudGameCartridge Instance = null!;
+    private readonly Camera _camera = new(new Vector2(1920, 1080));
+    private Level? _currentLevel;
+    private int _currentLevelIndex;
+    private readonly TweenableFloat _curtainPercent = new();
+    private readonly SequenceTween _levelTransitionTween = new();
+    private float _totalElapsedTime;
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
+        LudGameCartridge.Instance = this;
     }
 
     public override CartridgeConfig CartridgeConfig => new(new Point(1920, 1080), SamplerState.AnisotropicWrap);
     public static Scale2D ActorScale => new(new Vector2(0.25f, 0.25f));
+
+    public static string[] LevelSequence { get; private set; } = Array.Empty<string>();
 
     public IEnumerable<ILoadEvent> LoadEvents(Painter painter)
     {
@@ -42,60 +50,81 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
                     LudEditorCartridge.TextureFrameSize),
                 Client.Assets.GetTexture("cat/sheet"))));
 
-        yield return new VoidLoadEvent("LevelSequence", () =>
-        {
-            LudGameCartridge.LevelSequence = Runtime.FileSystem.Local.ReadFile("Content/cat/level-sequence.txt").SplitLines();
-        });
+        yield return new VoidLoadEvent("LevelSequence",
+            () =>
+            {
+                LudGameCartridge.LevelSequence =
+                    Runtime.FileSystem.Local.ReadFile("Content/cat/level-sequence.txt").SplitLines();
+            });
     }
-
-    public static string[] LevelSequence { get; private set; } = Array.Empty<string>();
 
     public override void OnCartridgeStarted()
     {
-        _currentLevel = LoadLevel(0);
+        LoadCurrentLevel();
+        ClearCurtain();
+    }
+
+    private void LoadCurrentLevel()
+    {
+        _currentLevel = LoadLevel(_currentLevelIndex);
     }
 
     private Level LoadLevel(int i)
     {
-        if (i < LevelSequence.Length)
+        if (i < LudGameCartridge.LevelSequence.Length)
         {
-            var levelName = LevelSequence[i];
+            var levelName = LudGameCartridge.LevelSequence[i];
             var levelData = G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{levelName}.json");
             return new Level().LoadFromJson(levelData, true);
         }
-        else
-        {
-            throw new Exception("Ran out of levels! ... I need to make an outro screen");
-        }
+
+        throw new Exception("Ran out of levels! ... I need to make an outro screen");
     }
 
     public override void Draw(Painter painter)
     {
         G.DrawBackground(painter, Runtime.Window.RenderResolution, _camera);
-        
+
         painter.BeginSpriteBatch(_camera.CanvasToScreen);
-        _currentLevel.Scene.DrawContent(painter);
+        _currentLevel?.Scene.DrawContent(painter);
+        painter.EndSpriteBatch();
+
+        painter.BeginSpriteBatch();
+        var curtainRectangle = Runtime.Window.RenderResolution.ToRectangleF();
+        var curtainX = curtainRectangle.Width * _curtainPercent.Value;
+        curtainRectangle.Location = new Vector2(curtainX, 0);
+        painter.DrawRectangle(curtainRectangle, new DrawSettings {Color = G.CurtainColor2});
+        painter.DrawAsRectangle(Client.Assets.GetTexture("Background"), curtainRectangle,
+            new DrawSettings
+            {
+                SourceRectangle = new Rectangle(new Point((int) (_totalElapsedTime * 1000)),
+                    (curtainRectangle.Size * LudEditorCartridge.BackgroundScalar).ToPoint()),
+                Color = G.CurtainColor1
+            });
         painter.EndSpriteBatch();
     }
 
     public override void Update(float dt)
     {
+        _totalElapsedTime += dt;
+        _levelTransitionTween.Update(dt);
+
         if (G.ImpactTimer > 0)
         {
             G.ImpactTimer -= dt;
             return;
         }
-        
-        _currentLevel.Scene.Update(dt);
+
+        _currentLevel?.Scene.Update(dt);
     }
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
-        _currentLevel.Scene.UpdateInput(input, hitTestStack);
+        _currentLevel?.Scene.UpdateInput(input, hitTestStack);
 
         if (input.Keyboard.GetButton(Keys.R, true).WasPressed)
         {
-            _currentLevel = LoadLevel(0);
+            LoadCurrentLevel();
         }
     }
 
@@ -107,5 +136,34 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     {
         return random.NextPositiveVector2()
             .StraightMultiply(new Vector2(random.NextSign(), random.NextSign()));
+    }
+
+    public void MoveToNextLevel()
+    {
+        ClearCurtain();
+
+        _currentLevelIndex++;
+        LoadCurrentLevel();
+    }
+
+    private void ClearCurtain()
+    {
+        _levelTransitionTween.Clear();
+        _curtainPercent.Value = 0;
+        _levelTransitionTween.Add(_curtainPercent.TweenTo(1f, G.TransitionDuration, Ease.Linear));
+    }
+
+    public void TransitionToNextLevel()
+    {
+        ShowCurtain();
+        _levelTransitionTween.Add(new CallbackTween(() => { LudGameCartridge.Instance.MoveToNextLevel(); }));
+    }
+
+    private void ShowCurtain()
+    {
+        _levelTransitionTween.Clear();
+        _curtainPercent.Value = -1;
+        _levelTransitionTween.Add(_curtainPercent.TweenTo(0f, G.TransitionDuration, Ease.Linear));
+        _levelTransitionTween.Add(new WaitSecondsTween(0.5f));
     }
 }

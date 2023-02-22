@@ -62,7 +62,7 @@ public class Cat : BaseComponent
         _handVisible = true;
         
         
-        void TransitionTo(int frame)
+        void TransitionFrameTo(int frame)
         {
             _tween.Add(_handScale.TweenTo(new Vector2(1, 0.75f), 0.1f, Ease.QuadSlowFast));
             _tween.Add(new CallbackTween(() => _handFrame = frame));
@@ -77,7 +77,7 @@ public class Cat : BaseComponent
         _tween.Clear();
         _handPosition.Value = handStartingPosition;
         _tween.Add(_handPosition.TweenTo(abovePosition, 0.5f, Ease.CubicFastSlow));
-        TransitionTo(10);
+        TransitionFrameTo(10);
 
         _tween.Add(_handPosition.TweenTo(pettingPosition, 0.25f, Ease.CubicFastSlow));
 
@@ -91,6 +91,10 @@ public class Cat : BaseComponent
         _tween.Add(_handAngle.TweenTo(0, 0.15f, Ease.Linear));
         _tween.Add(_handPosition.TweenTo(moreAbovePosition, 0.25f, Ease.CubicFastSlow));
 
-        TransitionTo(7);
+        TransitionFrameTo(7);
+
+        _tween.Add(new WaitSecondsTween(1f));
+
+        _tween.Add(new CallbackTween(() => { LudGameCartridge.Instance.TransitionToNextLevel(); }));
     }
 }
