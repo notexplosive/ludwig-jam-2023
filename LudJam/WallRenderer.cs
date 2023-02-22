@@ -18,8 +18,8 @@ public class WallRenderer : BaseComponent
 
     public override void Draw(Painter painter)
     {
-        var solidColor = ColorExtensions.FromRgbHex(0x329F5B);
-        var accentColor = ColorExtensions.FromRgbHex(0x8FD5A6);
+        var solidColor = G.WallColor1;
+        var accentColor = G.WallColor2;
 
         painter.DrawRectangle(_boundingRectangle, new DrawSettings {Color = solidColor, Depth = Actor.Depth});
 

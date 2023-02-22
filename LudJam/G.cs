@@ -23,8 +23,8 @@ public static class G
     {
         // Draw background
         painter.BeginSpriteBatch();
-        var backgroundColor = ColorExtensions.FromRgbHex(0x0D5D56);
-        var backgroundAccentColor = ColorExtensions.FromRgbHex(0x0C8346);
+        var backgroundColor = G.BackgroundColor1;
+        var backgroundAccentColor = G.BackgroundColor2;
         var renderResolutionRect = renderResolution.ToRectangleF();
         painter.DrawRectangle(renderResolutionRect, new DrawSettings {Color = backgroundColor});
         painter.DrawAsRectangle(Client.Assets.GetTexture("Background"), renderResolutionRect,
@@ -36,6 +36,9 @@ public static class G
             });
         painter.EndSpriteBatch();
     }
+
+    public static Color BackgroundColor1 => ColorExtensions.FromRgbHex(0x162627);
+    public static Color BackgroundColor2 => ColorExtensions.FromRgbHex(0x00523D);
 
     public static Color JumpParticleColor => Color.Orange.DimmedBy(0.2f);
     public static Color FlameColor => Color.OrangeRed;
@@ -50,4 +53,6 @@ public static class G
     public static float TransitionDuration => 1f;
     public static Color CurtainColor1 => ColorExtensions.FromRgbHex(0x0E131B);
     public static Color CurtainColor2 => ColorExtensions.FromRgbHex(0x2B3A67);
+    public static Color WallColor1 => ColorExtensions.FromRgbHex(0x2D7DD2);
+    public static Color WallColor2 => ColorExtensions.FromRgbHex(0x85B404);
 }
