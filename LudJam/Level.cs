@@ -6,7 +6,6 @@ using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Data;
 using Fenestra;
-using Fenestra.Components;
 using FenestraSceneGraph;
 using FenestraSceneGraph.Components;
 using Microsoft.Xna.Framework;
@@ -83,6 +82,7 @@ public class Level
                 if (isGame)
                 {
                     _cat.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize * LudGameCartridge.ActorScale.Value.X),DrawOrigin.Center);
+                    _cat.AddComponent<Cat>();
                 }
             });
         }

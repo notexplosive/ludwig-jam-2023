@@ -70,11 +70,21 @@ public class PlayerMovement : BaseComponent
                 }
             }
 
+            foreach (var cat in Actor.Scene.GetAllComponentsMatching<Cat>())
+            {
+                if (cat.Rectangle.Intersects(_boundingRect))
+                {
+                    cat.AnimateVictory(Actor.Position);
+                    Actor.DestroyDeferred();
+                }
+            }
+
+
             foreach (var solid in Actor.Scene.GetAllComponentsMatching<Solid>())
             {
                 var otherRect = solid.Rectangle;
                 var myRect = _boundingRect.Rectangle;
-                if (solid.Rectangle.Intersects(_boundingRect))
+                if (otherRect.Intersects(myRect))
                 {
                     // figure out which side we hit in this awful (but extremely cheap) way
                     var newVelocity = _physics.Velocity;
