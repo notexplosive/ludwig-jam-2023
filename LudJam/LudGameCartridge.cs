@@ -160,6 +160,13 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
+        if (input.Keyboard.GetButton(Keys.F4, true).WasPressed && _currentLevel != null)
+        {
+            LudCoreCartridge.Instance.RegenerateCartridge<LudEditorCartridge>();
+            var editor = LudCoreCartridge.Instance.SwapTo<LudEditorCartridge>();
+            editor.LoadJson(_currentLevel.ToJson());
+        }
+        
         if (!_levelTransitionTween.IsDone())
         {
             return;
@@ -172,10 +179,6 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         {
             LoadCurrentLevel();
         }
-    }
-
-    public override void Unload()
-    {
     }
 
     public static Vector2 GetRandomVector(NoiseBasedRng random)

@@ -15,9 +15,9 @@ public class LevelData
         Content.Add(data);
     }
 
-    public string[] AsJson()
+    public string AsJson()
     {
         var blob = JsonConvert.SerializeObject(this, Formatting.Indented);
-        return blob.SplitLines();
+        return blob;
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ExplogineCore;
 using ExplogineCore.Data;
 using ExplogineMonoGame;
 using ExplogineMonoGame.Cartridges;
@@ -124,6 +125,12 @@ public class LudEditorCartridge : NoProviderCartridge
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
+        if (input.Keyboard.GetButton(Keys.F4, true).WasPressed)
+        {
+            LudCoreCartridge.Instance.RegenerateCartridge<LudGameCartridge>();
+            var game = LudCoreCartridge.Instance.SwapTo<LudGameCartridge>();
+        }
+        
         if (_state.CurrentMode == Mode.Main)
         {
             var pressedNumber = PressedNumberRowButton(input);
@@ -216,12 +223,17 @@ public class LudEditorCartridge : NoProviderCartridge
         }
     }
 
-    private void Open(string fileName)
+    public void Open(string fileName)
     {
         _state = new EditorState();
         _state.SavedName = fileName;
         var text = G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{fileName}.json");
 
+        LoadJson(text);
+    }
+
+    public void LoadJson(string text)
+    {
         _state.Level.LoadFromJson(text);
     }
 
@@ -254,18 +266,8 @@ public class LudEditorCartridge : NoProviderCartridge
         _state.SavedName = stateSavedName;
         var fileName = $"{stateSavedName}.json";
 
-        var content = new LevelData();
-        foreach (var actor in _state.Level.Scene.AllActors())
-        {
-            var serializable = actor.GetComponent<EditorSerializable>();
-            if (serializable != null)
-            {
-                content.Add(serializable.Serialize());
-            }
-        }
-
         Client.Debug.Log($"Writing file {fileName}");
-        G.EditorDevelopmentFileSystem(Runtime).WriteToFile($"Content/cat/{fileName}", content.AsJson());
+        G.EditorDevelopmentFileSystem(Runtime).WriteToFile($"Content/cat/{fileName}", _state.Level.ToJson().SplitLines());
     }
 
     private void PromptForName()

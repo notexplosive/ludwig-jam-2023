@@ -14,7 +14,10 @@ public class LudCoreCartridge : MultiCartridge
         new LudEditorCartridge(runtime)
     )
     {
+        Instance = this;
     }
+
+    public static LudCoreCartridge Instance { get; private set; }
 
     public override void OnCartridgeStarted()
     {

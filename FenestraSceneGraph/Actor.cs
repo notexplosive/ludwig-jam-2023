@@ -72,6 +72,8 @@ public class Actor
         }
     }
 
+    public bool Visible { get; set; } = true;
+
     public event Action? Destroyed;
     public event Action? Deleted;
 
@@ -85,6 +87,11 @@ public class Actor
 
     public void Draw(Painter painter)
     {
+        if (!Visible)
+        {
+            return;
+        }
+        
         foreach (var component in _components)
         {
             component.Draw(painter);
