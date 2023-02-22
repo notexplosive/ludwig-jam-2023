@@ -99,6 +99,13 @@ public class PlayerMovement : BaseComponent
                 {
                     cat.AnimateVictory(Actor.Position);
                     Actor.DestroyDeferred();
+                    return;
+                }
+
+                if ((cat.Actor.Position - Actor.Position).Length() > 20000)
+                {
+                    SpawnDeadBody(Vector2.Zero);
+                    return;
                 }
             }
 
@@ -139,26 +146,32 @@ public class PlayerMovement : BaseComponent
 
                     G.ImpactFreeze(0.05f);
 
-                    Actor.DestroyDeferred();
-                    Actor.Scene.AddDeferredAction(() =>
-                    {
-                        var debris = scene.AddNewActor();
-                        debris.Angle = Actor.Angle;
-                        debris.Position = Actor.Position;
-                        debris.Depth = Depth.Front + 10;
-                        debris.Scale = Actor.Scale;
-
-                        var phys = debris.AddComponent<SimplePhysics>().Init(newVelocity / 2f);
-                        phys.TimeScale = _physics.TimeScale;
-                        debris.AddComponent<SpriteFrameRenderer>()
-                            .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8, G.CharacterColor.DimmedBy(0.2f));
-                        debris.AddComponent<RandomSpin>().Init(newVelocity.Normalized().X / 50f);
-                        debris.AddComponent<CameraFocusPoint>();
-                        LudGameCartridge.Instance.ResetLevelAfterTimer();
-                    });
+                    SpawnDeadBody(newVelocity);
                 }
             }
         }
+    }
+
+    private void SpawnDeadBody(Vector2 newVelocity)
+    {
+        var scene = Actor.Scene;
+        Actor.DestroyDeferred();
+        Actor.Scene.AddDeferredAction(() =>
+        {
+            var debris = scene.AddNewActor();
+            debris.Angle = Actor.Angle;
+            debris.Position = Actor.Position;
+            debris.Depth = Depth.Front + 10;
+            debris.Scale = Actor.Scale;
+
+            var phys = debris.AddComponent<SimplePhysics>().Init(newVelocity / 2f);
+            phys.TimeScale = _physics.TimeScale;
+            debris.AddComponent<SpriteFrameRenderer>()
+                .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8, G.CharacterColor.DimmedBy(0.2f));
+            debris.AddComponent<RandomSpin>().Init(newVelocity.Normalized().X / 50f);
+            debris.AddComponent<CameraFocusPoint>();
+            LudGameCartridge.Instance.ResetLevelAfterTimer();
+        });
     }
 
     public override void Draw(Painter painter)
@@ -166,15 +179,6 @@ public class PlayerMovement : BaseComponent
         if (IsDraggingAtAll)
         {
             _spriteFrameRenderer.Frame = 3;
-
-            var angle = DragDelta.GetAngleFromUnitX();
-
-            if (IsMeaningfullyDragging)
-            {
-                Actor.Angle = angle + MathF.PI;
-                painter.DrawLine(_drag.StartingValue, _drag.StartingValue + DragDelta,
-                    new LineDrawSettings {Thickness = 2});
-            }
 
             // predict arc
             var velocity = CalculateVelocityAfterJump();
@@ -229,10 +233,10 @@ public class PlayerMovement : BaseComponent
         if (input.Mouse.GetButton(MouseButton.Left).WasPressed)
         {
             _physics.RaiseFreezeSemaphore();
-            _drag.Start(input.Mouse.Position(hitTestStack.WorldMatrix));
+            _drag.Start(input.Mouse.Position());
         }
 
-        _drag.AddDelta(input.Mouse.Delta(hitTestStack.WorldMatrix));
+        _drag.AddDelta(input.Mouse.Delta());
 
         if (input.Mouse.GetButton(MouseButton.Left).WasReleased && IsDraggingAtAll)
         {
