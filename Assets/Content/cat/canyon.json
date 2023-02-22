@@ -20,9 +20,9 @@
     {
       "Name": "Wall",
       "Width": 184,
-      "Height": 619,
+      "Height": 550,
       "X": 1542,
-      "Y": 50
+      "Y": 119
     },
     {
       "Name": "Wall",
@@ -58,6 +58,10 @@
       "Height": 272,
       "X": 2457,
       "Y": -321
+    },
+    {
+      "Name": "Par",
+      "Amount": 3
     }
   ]
 }

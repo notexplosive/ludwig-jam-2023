@@ -17,9 +17,15 @@ namespace LudJam;
 public class Level
 {
     private Actor? _cat;
+    private ParCounter? _parCounter;
     private Actor? _spawn;
     private int _strokeCount;
-    private ParCounter? _parCounter;
+
+    public Level()
+    {
+        Scene = new Scene(new Point(1920, 1080));
+        Scene.RemovedActor += WhenActorRemoved;
+    }
 
     public int ParStrokeCount
     {
@@ -32,12 +38,6 @@ public class Level
 
             return 0;
         }
-    }
-
-    public Level()
-    {
-        Scene = new Scene(new Point(1920, 1080));
-        Scene.RemovedActor += WhenActorRemoved;
     }
 
     public Scene Scene { get; }
@@ -92,12 +92,16 @@ public class Level
                 _cat = Scene.AddNewActor();
                 _cat.Scale = LudGameCartridge.ActorScale;
                 _cat.Depth = Depth.Front + 100;
-                _cat.AddComponent<EditorSerializable>().Init(actor => new CatData {X = actor.Position.X, Y = actor.Position.Y});
-                _cat.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 9, G.CharacterColor);
+                _cat.AddComponent<EditorSerializable>()
+                    .Init(actor => new CatData {X = actor.Position.X, Y = actor.Position.Y});
+                _cat.AddComponent<SpriteFrameRenderer>()
+                    .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 9, G.CharacterColor);
 
                 if (isGame)
                 {
-                    _cat.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize * LudGameCartridge.ActorScale.Value.X),DrawOrigin.Center);
+                    _cat.AddComponent<BoundingRectangle>()
+                        .Init(new Vector2(LudEditorCartridge.TextureFrameSize * LudGameCartridge.ActorScale.Value.X),
+                            DrawOrigin.Center);
                     _cat.AddComponent<Cat>();
                 }
             });
@@ -116,8 +120,10 @@ public class Level
                 _spawn.Position = position;
                 _spawn.Scale = LudGameCartridge.ActorScale;
                 _spawn.Depth = Depth.Front + 100;
-                _spawn.AddComponent<EditorSerializable>().Init(actor => new SpawnData {X = actor.Position.X, Y = actor.Position.Y});
-                _spawn.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3, G.CharacterColor);
+                _spawn.AddComponent<EditorSerializable>()
+                    .Init(actor => new SpawnData {X = actor.Position.X, Y = actor.Position.Y});
+                _spawn.AddComponent<SpriteFrameRenderer>()
+                    .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3, G.CharacterColor);
 
                 if (isGame)
                 {
@@ -125,8 +131,12 @@ public class Level
                     player.Position = _spawn.Position;
                     player.Scale = LudGameCartridge.ActorScale;
                     player.Depth = _spawn.Depth;
-                    player.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3, G.CharacterColor);
-                    player.AddComponent<BoundingRectangle>().Init(new Vector2(LudEditorCartridge.TextureFrameSize* LudGameCartridge.ActorScale.Value.X) / 2f,DrawOrigin.Center);
+                    player.AddComponent<SpriteFrameRenderer>().Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 3,
+                        G.CharacterColor);
+                    player.AddComponent<BoundingRectangle>()
+                        .Init(
+                            new Vector2(LudEditorCartridge.TextureFrameSize * LudGameCartridge.ActorScale.Value.X) / 2f,
+                            DrawOrigin.Center);
                     player.AddComponent<SimplePhysics>();
                     player.AddComponent<PlayerMovement>().Init(this);
 
@@ -135,10 +145,7 @@ public class Level
             });
         }
 
-        Scene.AddDeferredAction(() =>
-        {
-            _spawn!.Position = position;
-        });
+        Scene.AddDeferredAction(() => { _spawn!.Position = position; });
     }
 
     public Level LoadFromJson(string text, bool isGame)
@@ -183,9 +190,94 @@ public class Level
 
             case "Cat":
                 return JsonConvert.DeserializeObject<CatData>(objString);
+
+            case "Par":
+                return JsonConvert.DeserializeObject<ParData>(objString);
         }
 
         throw new Exception("No data");
+    }
+
+    public string ParStatus()
+    {
+        return $"Par: {_strokeCount} / {ParStrokeCount}";
+    }
+
+    public void IncrementStrokeCount()
+    {
+        _strokeCount++;
+    }
+
+    public Level FinishLoadingLevelForGame()
+    {
+        _parCounter ??= new ParCounter();
+        return this;
+    }
+
+    public string ToJson()
+    {
+        var content = new LevelData();
+        foreach (var actor in Scene.AllActors())
+        {
+            var serializable = actor.GetComponent<EditorSerializable>();
+            if (serializable != null)
+            {
+                content.Add(serializable.Serialize());
+            }
+        }
+
+        if (_parCounter != null)
+        {
+            var parData = new ParData
+            {
+                Amount = ParStrokeCount
+            };
+            content.Add(parData);
+        }
+
+        return content.AsJson();
+    }
+
+    public void IncreasePar()
+    {
+        if (_parCounter == null)
+        {
+            _parCounter = new ParCounter();
+        }
+
+        _parCounter.Par++;
+    }
+
+    public void DecreasePar()
+    {
+        if (_parCounter == null)
+        {
+            _parCounter = new ParCounter();
+        }
+        else
+        {
+            _parCounter.Par--;
+        }
+
+        if (_parCounter.Par < 0)
+        {
+            _parCounter.Par = 0;
+        }
+    }
+
+    private struct ParData : ISerializedContent
+    {
+        public string Name => "Par";
+
+        public void AddToLevel(Level level, bool isGame)
+        {
+            for (var i = 0; i < Amount; i++)
+            {
+                level.IncreasePar();
+            }
+        }
+
+        public int Amount { get; set; }
     }
 
     public struct CatData : ISerializedContent
@@ -194,7 +286,7 @@ public class Level
 
         public void AddToLevel(Level level, bool isGame)
         {
-            level.SetCatPosition(new Vector2(X,Y), isGame);
+            level.SetCatPosition(new Vector2(X, Y), isGame);
         }
 
         public float X { get; set; }
@@ -207,7 +299,7 @@ public class Level
 
         public void AddToLevel(Level level, bool isGame)
         {
-            level.SetSpawnPosition(new Vector2(X,Y), isGame);
+            level.SetSpawnPosition(new Vector2(X, Y), isGame);
         }
 
         public float X { get; set; }
@@ -227,45 +319,5 @@ public class Level
         public int Height { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-    }
-
-    public string ParStatus()
-    {
-        return $"Par: {_strokeCount} / {ParStrokeCount}";
-    }
-
-    public void IncrementStrokeCount()
-    {
-        _strokeCount++;
-    }
-
-    public Level FinishLoadingLevelForGame()
-    {
-        foreach (var parCounter in Scene.GetAllComponentsMatching<ParCounter>())
-        {
-            _parCounter = parCounter;
-        }
-
-        if (_parCounter == null)
-        {
-            _parCounter = Scene.AddNewActor().AddComponent<ParCounter>();
-        }
-
-        return this;
-    }
-
-    public string ToJson()
-    {
-        var content = new LevelData();
-        foreach (var actor in Scene.AllActors())
-        {
-            var serializable = actor.GetComponent<EditorSerializable>();
-            if (serializable != null)
-            {
-                content.Add(serializable.Serialize());
-            }
-        }
-
-        return content.AsJson();
     }
 }

@@ -53,7 +53,8 @@ public class LudEditorCartridge : NoProviderCartridge
             new SelectionTool(),
             new WallTool(),
             new PlaceCatTool(),
-            new PlaceSpawnTool()
+            new PlaceSpawnTool(),
+            new ParTool()
         };
     }
 
