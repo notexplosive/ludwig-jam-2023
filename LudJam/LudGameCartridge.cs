@@ -24,6 +24,9 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     private Level? _currentLevel;
     private int _currentLevelIndex;
     private float _totalElapsedTime;
+    private bool _isEditorSession;
+    private string _cachedLevelJson;
+    private string? _cachedLevelName;
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
@@ -68,6 +71,12 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     private void LoadCurrentLevel()
     {
+        if (_isEditorSession)
+        {
+            LoadCachedEditorLevel();
+            return;
+        }
+        
         _currentLevel = LoadLevel(_currentLevelIndex);
     }
 
@@ -77,6 +86,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         {
             var levelName = LudGameCartridge.LevelSequence[i];
             var levelData = G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{levelName}.json");
+            _cachedLevelName = levelName;
             return new Level().LoadFromJson(levelData, true).FinishLoadingLevelForGame();
         }
 
@@ -87,9 +97,9 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     {
         G.DrawBackground(painter, Runtime.Window.RenderResolution, _camera);
 
-        // only draw the drop shadow on release builds because shaders break hot reload (that sucks!)
+        var shader = Client.Assets.GetEffect("cat/Shadow");
         painter.BeginSpriteBatch(_camera.CanvasToScreen * Matrix.CreateTranslation(new Vector3(new Vector2(10), 0)),
-            Client.Assets.GetEffect("cat/Shadow"));
+            shader);
         _currentLevel?.Scene.DrawContent(painter);
         painter.EndSpriteBatch();
 
@@ -99,12 +109,20 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
         painter.BeginSpriteBatch();
         var safeAreaRect = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-20, -20);
-        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
-            _currentLevel?.ParStatus() ?? "No level", safeAreaRect, Alignment.TopCenter,
-            new DrawSettings {Color = _currentLevel.IsPassedPar ? Color.OrangeRed : Color.White, Depth = Depth.Middle});
-        painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
-            _currentLevel?.ParStatus() ?? "No level", safeAreaRect.Moved(new Vector2(2)), Alignment.TopCenter,
-            new DrawSettings {Depth = Depth.Middle + 1, Color = Color.Black});
+
+        // draw Par text
+        if (_currentLevel != null)
+        {
+            var color = _currentLevel.IsPassedPar ? Color.OrangeRed : Color.White;
+            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
+                _currentLevel.ParStatus() ?? "No level", safeAreaRect, Alignment.TopCenter,
+                new DrawSettings
+                    {Color = color, Depth = Depth.Middle});
+            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
+                _currentLevel.ParStatus() ?? "No level", safeAreaRect.Moved(new Vector2(2)), Alignment.TopCenter,
+                new DrawSettings {Depth = Depth.Middle + 1, Color = Color.Black});
+        }
+
         painter.EndSpriteBatch();
 
         painter.BeginSpriteBatch();
@@ -172,7 +190,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         {
             LudCoreCartridge.Instance.RegenerateCartridge<LudEditorCartridge>();
             var editor = LudCoreCartridge.Instance.SwapTo<LudEditorCartridge>();
-            editor.LoadJson(_currentLevel.ToJson());
+            editor.LoadJson(_currentLevel.ToJson(), _cachedLevelName);
         }
 
         if (!_levelTransitionTween.IsDone())
@@ -233,5 +251,18 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     public void AddCameraFocusPoint(Vector2 point)
     {
         _cameraFocusObjects.Add(point);
+    }
+
+    public void LoadJson(string levelJson, string? levelName)
+    {
+        _cachedLevelJson = levelJson;
+        _currentLevel = new Level().LoadFromJson(levelJson, true);
+        _cachedLevelName = levelName;
+        _isEditorSession = true;
+    }
+    
+    private void LoadCachedEditorLevel()
+    {
+        LoadJson(_cachedLevelJson, _cachedLevelName);
     }
 }

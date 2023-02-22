@@ -141,7 +141,7 @@ public class Level
         });
     }
 
-    public Level LoadFromJson(string text, bool isGame = false)
+    public Level LoadFromJson(string text, bool isGame)
     {
         try
         {

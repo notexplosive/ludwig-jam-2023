@@ -129,6 +129,12 @@ public class LudEditorCartridge : NoProviderCartridge
         {
             LudCoreCartridge.Instance.RegenerateCartridge<LudGameCartridge>();
             var game = LudCoreCartridge.Instance.SwapTo<LudGameCartridge>();
+            if (_state.SavedName != null)
+            {
+                Save();
+            }
+
+            game.LoadJson(_state.Level.ToJson(), _state.SavedName);
         }
         
         if (_state.CurrentMode == Mode.Main)
@@ -226,15 +232,14 @@ public class LudEditorCartridge : NoProviderCartridge
     public void Open(string fileName)
     {
         _state = new EditorState();
-        _state.SavedName = fileName;
         var text = G.EditorDevelopmentFileSystem(Runtime).ReadFile($"Content/cat/{fileName}.json");
-
-        LoadJson(text);
+        LoadJson(text, fileName);
     }
 
-    public void LoadJson(string text)
+    public void LoadJson(string text, string? cachedLevelName)
     {
-        _state.Level.LoadFromJson(text);
+        _state.Level.LoadFromJson(text, false);
+        _state.SavedName = cachedLevelName;
     }
 
     private void SubmitPrompt()
