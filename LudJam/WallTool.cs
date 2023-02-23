@@ -11,8 +11,14 @@ public class WallTool : IEditorTool
 {
     private Vector2? _startPosition;
     private Vector2 _currentPosition;
-    public string Name => "Wall";
 
+    private readonly Level.WallType _wallType;
+
+    public WallTool(Level.WallType wallType)
+    {
+        _wallType = wallType;
+    }
+    public string Name => _wallType.ToString();
     public void UpdateInput(ConsumableInput input, HitTestStack hitTestStack, Level level, bool isWithinScreen)
     {
         if (input.Mouse.GetButton(MouseButton.Left).WasPressed && isWithinScreen)
@@ -31,12 +37,17 @@ public class WallTool : IEditorTool
             {
                 if (Math.Min(targetRect.Width, targetRect.Height) > 32)
                 {
-                    level.AddWall(targetRect.ToRectangle());
+                    Create(targetRect, level);
                 }
                 _startPosition = null;
             }
             
         }
+    }
+
+    private void Create(RectangleF targetRect, Level level)
+    {
+        level.AddWall(targetRect.ToRectangle(), _wallType);
     }
 
     public void Draw(Painter painter)

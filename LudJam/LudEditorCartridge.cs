@@ -53,9 +53,12 @@ public class LudEditorCartridge : NoProviderCartridge
         _tools = new List<IEditorTool>
         {
             new SelectionTool(),
-            new WallTool(),
             new PlaceCatTool(),
             new PlaceSpawnTool(),
+            new WallTool(Level.WallType.Solid),
+            new WallTool(Level.WallType.ToggleWallStartOn),
+            new WallTool(Level.WallType.ToggleWallStartOff),
+            new WallTool(Level.WallType.NoJumpingZone),
             new ParTool()
         };
     }

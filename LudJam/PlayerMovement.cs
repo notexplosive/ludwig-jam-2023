@@ -5,6 +5,7 @@ using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Data;
 using ExplogineMonoGame.Input;
 using ExTween;
+using Fenestra;
 using Fenestra.Components;
 using FenestraSceneGraph;
 using FenestraSceneGraph.Components;
@@ -125,7 +126,16 @@ public class PlayerMovement : BaseComponent
             {
                 var otherRect = solid.Rectangle;
                 var myRect = _boundingRect.Rectangle;
-                if (otherRect.Intersects(myRect))
+
+                var intersection = RectangleF.Intersect(myRect, otherRect);
+                if (Math.Abs(intersection.Area - myRect.Area) < 0.1f)
+                {
+                    G.StopThenPlaySound("engine/ouch", new SoundEffectSettings{Volume = 0.5f});
+                    G.ImpactFreeze(0.05f);
+                    G.Music.FadeToLow(0.1f);
+                    SpawnDeadBody(new Vector2(0,20));
+                }
+                else if (otherRect.Intersects(myRect))
                 {
                     // figure out which side we hit in this awful (but extremely cheap) way
                     var newVelocity = _physics.Velocity;
@@ -148,16 +158,15 @@ public class PlayerMovement : BaseComponent
                         newVelocity.X = -newVelocity.X;
                     }
                     // ReSharper restore CompareOfFloatsByEqualityOperator
+                    G.StopThenPlaySound("cat/pained-cough", new SoundEffectSettings{Volume = 1f});
 
-                    var scene = Actor.Scene;
+                    
                     for (var i = 0; i < 25; i++)
                     {
                         SpawnSmokeParticle(newVelocity, G.CharacterColor);
                     }
 
                     G.ImpactFreeze(0.05f);
-
-                    G.StopThenPlaySound("cat/pained-cough", new SoundEffectSettings{Volume = 1f});
                     G.Music.FadeToLow(0.1f);
                     SpawnDeadBody(newVelocity);
                 }
@@ -287,6 +296,7 @@ public class PlayerMovement : BaseComponent
     private void Jump()
     {
         _physics.Velocity = CalculateVelocityAfterJump();
+        Actor.Scene.Broadcast(new JumpMessage());
     }
 
     private void SpawnSmokeParticle(Vector2 trendingDirection, Color color)
@@ -316,4 +326,8 @@ public class PlayerMovement : BaseComponent
     {
         _level = level;
     }
+}
+
+public class JumpMessage : ISceneMessage
+{
 }

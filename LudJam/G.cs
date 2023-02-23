@@ -25,6 +25,10 @@ public static class G
     public static Color CurtainColor2 => ColorExtensions.FromRgbHex(0x2B3A67);
     public static Color WallColor1 => ColorExtensions.FromRgbHex(0x2D7DD2);
     public static Color WallColor2 => ColorExtensions.FromRgbHex(0x85B404);
+    public static Color ToggleWallOnColor1 => ColorExtensions.FromRgbHex(0x5A5FA5);
+    public static Color ToggleWallOnColor2 => ColorExtensions.FromRgbHex(0x6184D8);
+    public static Color ToggleWallOffColor1 => ColorExtensions.FromRgbHex(0xFE7835);
+    public static Color ToggleWallOffColor2 => ColorExtensions.FromRgbHex(0xFF521B);
 
     public static IFileSystem EditorDevelopmentFileSystem(IRuntime runtime)
     {

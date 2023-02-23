@@ -227,6 +227,11 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
                 _currentLevel.ParStatus() ?? "No level", safeAreaRect.Moved(new Vector2(2)), Alignment.TopCenter,
                 new DrawSettings {Depth = Depth.Middle + 1, Color = Color.Black});
+            
+            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 40),
+                "notexplosive.net", safeAreaRect, Alignment.BottomCenter,
+                new DrawSettings
+                    {Color = Color.White, Depth = Depth.Middle});
         }
 
         painter.EndSpriteBatch();

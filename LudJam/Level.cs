@@ -16,6 +16,15 @@ namespace LudJam;
 
 public class Level
 {
+    public enum WallType
+    {
+        Solid,
+        ToggleWallStartOn,
+        ToggleWallStartOff,
+        NoJumpingZone,
+        BouncyWall
+    }
+
     private Actor? _cat;
     private ParCounter? _parCounter;
     private Actor? _spawn;
@@ -49,7 +58,7 @@ public class Level
         HoverStates.Remove(actor);
     }
 
-    public void AddWall(Rectangle wallRectangle)
+    public void AddWall(Rectangle wallRectangle, WallType wallType)
     {
         Scene.AddDeferredAction(() =>
         {
@@ -57,14 +66,25 @@ public class Level
             wall.Position = wallRectangle.Location.ToVector2();
             wall.Depth = Depth.Middle - Scene.AllActors().Count() * 5;
             wall.AddComponent<BoundingRectangle>().Init(wallRectangle.Size.ToVector2());
-            wall.AddComponent<WallRenderer>();
             wall.AddComponent<EditorSerializable>().Init(actor =>
             {
                 var rect = actor.GetComponent<BoundingRectangle>()!.Rectangle.ToRectangle();
                 return new WallData
-                    {X = rect.X, Y = rect.Y, Width = rect.Width, Height = rect.Height};
+                    {X = rect.X, Y = rect.Y, Width = rect.Width, Height = rect.Height, WallType = wallType};
             });
-            wall.AddComponent<Solid>();
+
+            
+            
+            if (wallType == WallType.Solid)
+            {
+                wall.AddComponent<Solid>();
+                wall.AddComponent<WallRenderer>().Init(G.WallColor1, G.WallColor2);
+            }
+
+            if (wallType == WallType.ToggleWallStartOff || wallType == WallType.ToggleWallStartOn)
+            {
+                wall.AddComponent<ToggleWall>().Init(wallType == WallType.ToggleWallStartOn);
+            }
         });
     }
 
@@ -312,12 +332,13 @@ public class Level
 
         public void AddToLevel(Level level, bool isGame)
         {
-            level.AddWall(new Rectangle(X, Y, Width, Height));
+            level.AddWall(new Rectangle(X, Y, Width, Height), WallType);
         }
 
         public int Width { get; set; }
         public int Height { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
+        public WallType WallType { get; set; }
     }
 }
