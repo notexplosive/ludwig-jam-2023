@@ -21,17 +21,25 @@
     {
       "Name": "Wall",
       "Width": 336,
-      "Height": 608,
-      "X": -120,
-      "Y": 118,
+      "Height": 955,
+      "X": -156,
+      "Y": -251,
       "WallType": 0
     },
     {
       "Name": "Wall",
       "Width": 344,
-      "Height": 581,
-      "X": 1551,
-      "Y": 146,
+      "Height": 1001,
+      "X": 1566,
+      "Y": -303,
+      "WallType": 0
+    },
+    {
+      "Name": "Wall",
+      "Width": 1339,
+      "Height": 263,
+      "X": 192,
+      "Y": -515,
       "WallType": 0
     },
     {

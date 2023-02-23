@@ -56,8 +56,9 @@ public class SelectionTool : IEditorTool
                 foreach (var actor in level.Scene.AllActors())
                 {
                     var boundingRectangle = actor.GetComponent<BoundingRectangle>();
+                    var isEditorSerializable = actor.GetComponent<EditorSerializable>() != null;
 
-                    if (boundingRectangle != null)
+                    if (boundingRectangle != null && isEditorSerializable)
                     {
                         if (!level.HoverStates.ContainsKey(actor))
                         {

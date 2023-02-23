@@ -31,7 +31,12 @@ public class ToggleWall : BaseComponent
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
-        
+        // we need this for editor
+        if (_solidActor != null)
+        {
+            _solidActor.Position = Actor.Position;
+            _solidActor.GetComponent<BoundingRectangle>()!.Init(_boundingRectangle.Rectangle.Size);
+        }
     }
 
     public override void ReceiveBroadcast(ISceneMessage message)

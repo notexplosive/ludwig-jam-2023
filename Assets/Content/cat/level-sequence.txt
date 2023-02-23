@@ -1,4 +1,5 @@
-game
+tutorial
 canyon
+toggle-1
 come-hither
 over-under

@@ -21,6 +21,7 @@ public class Cat : BaseComponent
     private readonly SequenceTween _tween = new();
     private int _handFrame = 4;
     private bool _handVisible;
+    private Level? _level;
 
     public Cat(Actor actor) : base(actor)
     {
@@ -29,18 +30,25 @@ public class Cat : BaseComponent
 
     public RectangleF Rectangle => _boundingRectangle.Rectangle;
 
+    public Cat Init(Level level)
+    {
+        _level = level;
+        return this;
+    }
+
     public override void Draw(Painter painter)
     {
         if (_handVisible)
         {
             var sheet = Client.Assets.GetAsset<SpriteSheet>("Sheet");
-            sheet.DrawFrameAtPosition(painter, _handFrame, _handPosition, new Scale2D(LudGameCartridge.ActorScale.Value.StraightMultiply(_handScale)),
+            sheet.DrawFrameAtPosition(painter, _handFrame, _handPosition,
+                new Scale2D(LudGameCartridge.ActorScale.Value.StraightMultiply(_handScale)),
                 new DrawSettings
                 {
                     Depth = Depth.Front,
                     Color = G.CharacterColor,
                     Angle = _handAngle,
-                    Origin = DrawOrigin.Center,
+                    Origin = DrawOrigin.Center
                 });
         }
     }
@@ -48,7 +56,7 @@ public class Cat : BaseComponent
     public override void Update(float dt)
     {
         LudGameCartridge.Instance.AddCameraFocusPoint(Actor.Position);
-        
+
         if (_handVisible)
         {
             LudGameCartridge.Instance.AddCameraFocusPoint(_handPosition);
@@ -63,15 +71,14 @@ public class Cat : BaseComponent
     public void AnimateVictory(Vector2 handStartingPosition)
     {
         _handVisible = true;
-        
-        
+
         void TransitionFrameTo(int frame)
         {
             _tween.Add(_handScale.TweenTo(new Vector2(1, 0.75f), 0.1f, Ease.QuadSlowFast));
             _tween.Add(new CallbackTween(() =>
             {
                 _handFrame = frame;
-                G.StopThenPlaySound("cat/fwp", new SoundEffectSettings{Volume = 1f});
+                G.StopThenPlaySound("cat/fwp", new SoundEffectSettings {Volume = 1f});
             }));
             _tween.Add(_handScale.TweenTo(new Vector2(1, 1.25f), 0.1f, Ease.QuadFastSlow));
             _tween.Add(_handScale.TweenTo(new Vector2(1, 1), 0.2f, Ease.QuadFastSlow));
@@ -100,7 +107,26 @@ public class Cat : BaseComponent
         _tween.Add(_handAngle.TweenTo(0, 0.15f, Ease.Linear));
         _tween.Add(_handPosition.TweenTo(moreAbovePosition, 0.25f, Ease.CubicFastSlow));
 
-        TransitionFrameTo(7);
+        if (_level == null)
+        {
+            TransitionFrameTo(7);
+        }
+        else if (_level.IsUnderPar)
+        {
+            TransitionFrameTo(5);
+            _tween.Add(new CallbackTween(() => G.PlaySoundEffect("cat/glass", new SoundEffectSettings())));
+            _tween.Add(_handAngle.TweenTo(MathF.PI*2, 0.25f, Ease.CubicFastSlow));
+        }
+        else if (_level.IsPassedPar)
+        {
+            TransitionFrameTo(7);
+            _tween.Add(new CallbackTween(() => G.PlaySoundEffect("cat/pained-cough", new SoundEffectSettings())));
+            _tween.Add(_handAngle.TweenTo(-MathF.PI, 0.25f, Ease.CubicFastSlow));
+        }
+        else if (_level.IsExactlyPar)
+        {
+            TransitionFrameTo(7);
+        }
 
         _tween.Add(new WaitSecondsTween(1f));
 

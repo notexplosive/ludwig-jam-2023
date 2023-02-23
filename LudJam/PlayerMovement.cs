@@ -60,7 +60,7 @@ public class PlayerMovement : BaseComponent
         }
     }
 
-    public float MaxDelta => 500;
+    public float MaxDelta => 400;
 
     public Vector2 JumpImpulseVelocity => -DragDelta * 2f;
 

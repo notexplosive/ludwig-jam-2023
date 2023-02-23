@@ -114,6 +114,9 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
                 ShowCurtain();
             });
 
+        _levelSelectGui.Button(new RectangleF(new Vector2(buttonX + 1200, buttonY), buttonSize), "Back", Depth.Middle,
+            () => { _mode = GameMode.MainMenu; });
+
         var safeZone = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-100, -100);
 
         _mainMenuGui.DynamicLabel(safeZone, Depth.Middle,
@@ -219,7 +222,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         painter.BeginSpriteBatch(Matrix.CreateTranslation(new Vector3(new Vector2(4, 4), 0)), shader);
         DrawParText(painter);
         painter.EndSpriteBatch();
-        
+
         // par text
         painter.BeginSpriteBatch();
         DrawParText(painter);

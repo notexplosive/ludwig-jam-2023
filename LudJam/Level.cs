@@ -51,6 +51,8 @@ public class Level
     public Scene Scene { get; }
     public Dictionary<Actor, HoverState> HoverStates { get; set; } = new();
     public bool IsPassedPar => StrokeCount > ParStrokeCount;
+    public bool IsExactlyPar => StrokeCount == ParStrokeCount;
+    public bool IsUnderPar => StrokeCount < ParStrokeCount;
 
     private void WhenActorRemoved(Actor actor)
     {
@@ -126,7 +128,7 @@ public class Level
                     _cat.AddComponent<BoundingRectangle>()
                         .Init(new Vector2(LudEditorCartridge.TextureFrameSize * LudGameCartridge.ActorScale.Value.X),
                             DrawOrigin.Center);
-                    _cat.AddComponent<Cat>();
+                    _cat.AddComponent<Cat>().Init(this);
                 }
             });
         }
