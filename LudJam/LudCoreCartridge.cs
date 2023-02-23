@@ -3,11 +3,15 @@ using ExplogineMonoGame;
 using ExplogineMonoGame.Cartridges;
 using ExplogineMonoGame.Data;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace LudJam;
 
 public class LudCoreCartridge : MultiCartridge
 {
+    private bool _isHoldingEscape;
+    private float _escapeTimer;
+
     public LudCoreCartridge(IRuntime runtime) : base(runtime,
         new DispatchCartridge(runtime),
         new LudGameCartridge(runtime),
@@ -33,6 +37,41 @@ public class LudCoreCartridge : MultiCartridge
     protected override void BeforeUpdate(float dt)
     {
         G.Music.UpdateTween(dt);
+
+        if (_isHoldingEscape)
+        {
+            _escapeTimer += dt;
+
+            if (_escapeTimer > 1)
+            {
+                RegenerateCartridge<LudGameCartridge>();
+                SwapTo<LudGameCartridge>();
+            }
+        }
+        else
+        {
+            _escapeTimer = 0;
+        }
+    }
+
+    protected override void BeforeUpdateInput(ConsumableInput input, HitTestStack hitTestStack)
+    {
+        if (_escapeTimer > 1)
+        {
+            input.Keyboard.Consume(Keys.Escape);
+        }
+
+        _isHoldingEscape = input.Keyboard.GetButton(Keys.Escape).IsDown;
+    }
+
+    protected override void AfterDraw(Painter painter)
+    {
+        if (_escapeTimer > 0)
+        {
+            painter.BeginSpriteBatch();
+            painter.DrawStringAtPosition(Client.Assets.GetFont("cat/Font", 72), "Resetting", Vector2.Zero, new DrawSettings{Color = Color.White.WithMultipliedOpacity(_escapeTimer)});
+            painter.EndSpriteBatch();
+        }
     }
 
     private class DispatchCartridge : Cartridge, ICommandLineParameterProvider

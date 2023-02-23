@@ -1,6 +1,6 @@
 ﻿namespace LudJam;
 
-public enum Mode
+public enum EditorMode
 {
     Main,
     Typing,

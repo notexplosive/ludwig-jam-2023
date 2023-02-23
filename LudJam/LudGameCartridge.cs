@@ -6,6 +6,8 @@ using ExplogineMonoGame;
 using ExplogineMonoGame.AssetManagement;
 using ExplogineMonoGame.Cartridges;
 using ExplogineMonoGame.Data;
+using ExplogineMonoGame.Gui;
+using ExplogineMonoGame.Layout;
 using ExTween;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,15 +20,22 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     public static LudGameCartridge Instance = null!;
     private readonly Camera _camera = new(new Vector2(1920, 1080));
     private readonly List<Vector2> _cameraFocusObjects = new();
+    private readonly Gui _creditsGui = new();
     private readonly TweenableFloat _curtainPercent = new();
+    private readonly Wrapped<bool> _fullscreenSetting = new();
+    private readonly Gui _levelSelectGui = new();
     private readonly SequenceTween _levelTransitionTween = new();
+    private readonly Gui _mainMenuGui = new();
+    private string? _cachedLevelJson;
+    private string? _cachedLevelName;
     private RectangleF _cameraTargetRect;
     private Level? _currentLevel;
     private int _currentLevelIndex;
-    private float _totalElapsedTime;
     private bool _isEditorSession;
-    private string _cachedLevelJson;
-    private string? _cachedLevelName;
+    private GameMode _mode;
+    private SimpleGuiTheme _mainGuiTheme = null!;
+    private float _totalElapsedTime;
+    private SimpleGuiTheme _levelSelectGuiTheme;
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
@@ -66,9 +75,101 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     public override void OnCartridgeStarted()
     {
         G.Music.FadeToMain();
+        _mode = GameMode.MainMenu;
+        _mainGuiTheme = new SimpleGuiTheme(Color.White, Color.Black, Color.White, Client.Assets.GetFont("cat/Font", 72));
+        _levelSelectGuiTheme = new SimpleGuiTheme(Color.White, Color.Black, Color.White, Client.Assets.GetFont("cat/Font", 32));
+
+        var buttonSize = new Vector2(500, 150);
+        var buttonX = 100;
+        var buttonY = 800;
+
+        _mainMenuGui.Button(new RectangleF(new Vector2(buttonX, buttonY), buttonSize), "Play", Depth.Middle, () =>
+        {
+            _mode = GameMode.Playing;
+            G.Music.FadeToMain();
+            LoadCurrentLevel();
+            HideCurtain(1);
+        });
+
+        _mainMenuGui.Button(new RectangleF(new Vector2(buttonX + 1200, buttonY), buttonSize), "Editor", Depth.Middle,
+            () => { LoadLevelEditor(); });
+
+        _mainMenuGui.Button(new RectangleF(new Vector2(buttonX + 600, buttonY), buttonSize), "Level Select",
+            Depth.Middle, () => { _mode = GameMode.LevelSelect; });
+
+        _mainMenuGui.Button(new RectangleF(new Vector2(buttonX + 1200, buttonY - 170), new Vector2(500, 100)),
+            "Credits",
+            Depth.Middle, () =>
+            {
+                _mode = GameMode.Credits;
+                HideCurtain();
+            });
+
+        _creditsGui.Button(new RectangleF(new Vector2(buttonX + 1200, buttonY), buttonSize), "Back", Depth.Middle,
+            () =>
+            {
+                _mode = GameMode.MainMenu;
+                ShowCurtain();
+            });
         
-        LoadCurrentLevel();
-        ClearCurtain();
+        var safeZone = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-100, -100);
+
+        _mainMenuGui.DynamicLabel(safeZone, Depth.Middle,
+            (painter, theme, rectangle, depth) =>
+            {
+                painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 250), "Pet The Cat", rectangle,
+                    Alignment.TopLeft, new DrawSettings());
+
+                painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 64),
+                    "Made in like 5 days by NotExplosive", rectangle.Moved(new Vector2(0, 250)),
+                    Alignment.TopLeft, new DrawSettings());
+            });
+
+        _creditsGui.DynamicLabel(safeZone, Depth.Middle,
+            (painter, theme, rectangle, depth) =>
+            {
+                painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 64),
+                    "Music by Crashtroid\nSome art from game-icons.net\nEverything else by NotExplosive\n\nMade with MonoGame and Explogine",
+                    rectangle, Alignment.CenterLeft, new DrawSettings());
+            });
+
+        _mainMenuGui.Checkbox(new RectangleF(new Vector2(safeZone.Left, 550), new Vector2(600, 72)), "Fullscreen",
+            Depth.Middle, _fullscreenSetting);
+        _fullscreenSetting.Value = Runtime.Window.IsFullscreen;
+        _fullscreenSetting.ValueChanged += b => { Runtime.Window.SetFullscreen(b); };
+
+        _mainMenuGui.Label(new RectangleF(new Vector2(safeZone.Left, 650), new Vector2(600, 72)), Depth.Middle,
+            "Volume");
+        _mainMenuGui.Slider(new RectangleF(new Vector2(safeZone.Left + 250, 650), new Vector2(600, 72)),
+            Orientation.Horizontal, 20, Depth.Middle, G.Music.VolumeInt);
+
+        var layoutBuilder =
+            new LayoutBuilder(new Style(Orientation.Vertical, 10, new Vector2(20, 20), Alignment.Center));
+
+        foreach (var _ in LudGameCartridge.LevelSequence)
+        {
+            layoutBuilder.Add(L.FillVertical("button", buttonSize.X));
+        }
+
+        var layout = layoutBuilder.Bake(Runtime.Window.RenderResolution);
+
+        var list = layout.FindElements("button");
+        for (var levelIndex = 0; levelIndex < list.Count; levelIndex++)
+        {
+            var buttonElement = list[levelIndex];
+            var captured = levelIndex;
+            _levelSelectGui.Button(buttonElement.Rectangle, LudGameCartridge.LevelSequence[levelIndex], Depth.Middle,
+                () =>
+                {
+                    _currentLevelIndex = captured;
+
+                    // same as play button
+                    _mode = GameMode.Playing;
+                    G.Music.FadeToMain();
+                    LoadCurrentLevel();
+                    HideCurtain(1);
+                });
+        }
     }
 
     private void LoadCurrentLevel()
@@ -79,11 +180,11 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             LoadCachedEditorLevel();
             return;
         }
-        
+
         _currentLevel = LoadLevel(_currentLevelIndex);
     }
 
-    private Level LoadLevel(int i)
+    private Level? LoadLevel(int i)
     {
         if (i < LudGameCartridge.LevelSequence.Length)
         {
@@ -93,7 +194,9 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             return new Level().LoadFromJson(levelData, true).FinishLoadingLevelForGame();
         }
 
-        throw new Exception("Ran out of levels! ... I need to make an outro screen");
+        _currentLevelIndex = 0;
+        _mode = GameMode.Credits;
+        return null;
     }
 
     public override void Draw(Painter painter)
@@ -141,6 +244,53 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
                 Color = G.CurtainColor1
             });
         painter.EndSpriteBatch();
+
+        if (_mode == GameMode.MainMenu)
+        {
+            // todo: extract this into a function because we copy-paste it below
+
+            // shadow
+            _mainMenuGui.PrepareCanvases(painter, _mainGuiTheme);
+            painter.BeginSpriteBatch(Matrix.CreateTranslation(new Vector3(new Vector2(10, 10), 0)), shader);
+            _mainMenuGui.Draw(painter, _mainGuiTheme);
+            painter.EndSpriteBatch();
+
+            // real
+            _mainMenuGui.PrepareCanvases(painter, _mainGuiTheme);
+            painter.BeginSpriteBatch(Matrix.Identity);
+            _mainMenuGui.Draw(painter, _mainGuiTheme);
+            painter.EndSpriteBatch();
+        }
+
+        if (_mode == GameMode.LevelSelect)
+        {
+            // shadow
+            _levelSelectGui.PrepareCanvases(painter, _levelSelectGuiTheme);
+            painter.BeginSpriteBatch(Matrix.CreateTranslation(new Vector3(new Vector2(10, 10), 0)), shader);
+            _levelSelectGui.Draw(painter, _levelSelectGuiTheme);
+            painter.EndSpriteBatch();
+
+            // real
+            _levelSelectGui.PrepareCanvases(painter, _levelSelectGuiTheme);
+            painter.BeginSpriteBatch(Matrix.Identity);
+            _levelSelectGui.Draw(painter, _levelSelectGuiTheme);
+            painter.EndSpriteBatch();
+        }
+
+        if (_mode == GameMode.Credits)
+        {
+            // shadow
+            _creditsGui.PrepareCanvases(painter, _mainGuiTheme);
+            painter.BeginSpriteBatch(Matrix.CreateTranslation(new Vector3(new Vector2(10, 10), 0)), shader);
+            _creditsGui.Draw(painter, _mainGuiTheme);
+            painter.EndSpriteBatch();
+
+            // real
+            _creditsGui.PrepareCanvases(painter, _mainGuiTheme);
+            painter.BeginSpriteBatch(Matrix.Identity);
+            _creditsGui.Draw(painter, _mainGuiTheme);
+            painter.EndSpriteBatch();
+        }
     }
 
     public override void Update(float dt)
@@ -189,25 +339,53 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)
     {
-        if (input.Keyboard.GetButton(Keys.F4, true).WasPressed && _currentLevel != null)
+        if (_mode == GameMode.MainMenu)
         {
-            LudCoreCartridge.Instance.RegenerateCartridge<LudEditorCartridge>();
-            var editor = LudCoreCartridge.Instance.SwapTo<LudEditorCartridge>();
-            editor.LoadJson(_currentLevel.ToJson(), _cachedLevelName);
+            _mainMenuGui.UpdateInput(input, hitTestStack);
         }
 
-        if (!_levelTransitionTween.IsDone())
+        if (_mode == GameMode.LevelSelect)
         {
-            return;
+            _levelSelectGui.UpdateInput(input, hitTestStack);
         }
 
-        var worldHitTestStack = hitTestStack.AddLayer(_camera.ScreenToCanvas, Depth.Middle);
-        _currentLevel?.Scene.UpdateInput(input, worldHitTestStack);
-
-        if (input.Keyboard.GetButton(Keys.R, true).WasPressed)
+        if (input.Keyboard.Modifiers.ControlShift && input.Keyboard.GetButton(Keys.R, true).WasPressed)
         {
-            LoadCurrentLevel();
+            LudCoreCartridge.Instance.RegenerateCartridge<LudGameCartridge>();
         }
+
+        if (_mode == GameMode.Playing)
+        {
+            if (input.Keyboard.GetButton(Keys.F4, true).WasPressed && _currentLevel != null)
+            {
+                var editor = LoadLevelEditor();
+                editor.LoadJson(_currentLevel.ToJson(), _cachedLevelName);
+            }
+
+            if (!_levelTransitionTween.IsDone())
+            {
+                return;
+            }
+
+            var worldHitTestStack = hitTestStack.AddLayer(_camera.ScreenToCanvas, Depth.Middle);
+            _currentLevel?.Scene.UpdateInput(input, worldHitTestStack);
+
+            if (input.Keyboard.GetButton(Keys.R, true).WasPressed)
+            {
+                LoadCurrentLevel();
+            }
+        }
+
+        if (_mode == GameMode.Credits)
+        {
+            _creditsGui.UpdateInput(input, hitTestStack);
+        }
+    }
+
+    private LudEditorCartridge LoadLevelEditor()
+    {
+        LudCoreCartridge.Instance.RegenerateCartridge<LudEditorCartridge>();
+        return LudCoreCartridge.Instance.SwapTo<LudEditorCartridge>();
     }
 
     public static Vector2 GetRandomVector(NoiseBasedRng random)
@@ -218,17 +396,18 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public void MoveToNextLevel()
     {
-        ClearCurtain();
+        HideCurtain();
 
         _currentLevelIndex++;
         LoadCurrentLevel();
     }
 
-    private void ClearCurtain()
+    private void HideCurtain(float delay = 0)
     {
         _levelTransitionTween.Clear();
         _curtainPercent.Value = 0;
-        _levelTransitionTween.Add(_curtainPercent.TweenTo(1f, G.TransitionDuration, Ease.QuadFastSlow));
+        _levelTransitionTween.Add(new WaitSecondsTween(delay));
+        _levelTransitionTween.Add(_curtainPercent.TweenTo(1f, G.TransitionDuration, Ease.QuadSlowFast));
     }
 
     public void TransitionToNextLevel()
@@ -241,14 +420,14 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     {
         _levelTransitionTween.Clear();
         _curtainPercent.Value = -1;
-        _levelTransitionTween.Add(_curtainPercent.TweenTo(0f, G.TransitionDuration, Ease.QuadSlowFast));
+        _levelTransitionTween.Add(_curtainPercent.TweenTo(0f, G.TransitionDuration, Ease.QuadFastSlow));
     }
 
     public void ResetLevelAfterTimer()
     {
         ShowCurtain();
         _levelTransitionTween.Add(new CallbackTween(LoadCurrentLevel));
-        _levelTransitionTween.Add(new CallbackTween(ClearCurtain));
+        _levelTransitionTween.Add(new CallbackTween(() => HideCurtain()));
     }
 
     public void AddCameraFocusPoint(Vector2 point)
@@ -258,14 +437,25 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public void LoadJson(string levelJson, string? levelName)
     {
+        HideCurtain();
         _cachedLevelJson = levelJson;
         _currentLevel = new Level().LoadFromJson(levelJson, true);
         _cachedLevelName = levelName;
         _isEditorSession = true;
+        _mode = GameMode.Playing;
     }
-    
+
     private void LoadCachedEditorLevel()
     {
-        LoadJson(_cachedLevelJson, _cachedLevelName);
+        LoadJson(_cachedLevelJson!, _cachedLevelName);
     }
+}
+
+public enum GameMode
+{
+    MainMenu,
+    Playing,
+    Paused,
+    Credits,
+    LevelSelect
 }

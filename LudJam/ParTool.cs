@@ -30,6 +30,5 @@ public class ParTool : IEditorTool
 
     public void Draw(Painter painter)
     {
-        
     }
 }

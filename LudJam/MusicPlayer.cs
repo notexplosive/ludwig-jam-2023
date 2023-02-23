@@ -1,4 +1,5 @@
 ﻿using System;
+using ExplogineCore.Data;
 using ExplogineMonoGame;
 using ExTween;
 using Microsoft.Xna.Framework.Audio;
@@ -15,6 +16,8 @@ public class MusicPlayer
     private readonly TweenableFloat _lowVolumeTweenable = new();
     private SoundEffectInstance _mainTrack = null!;
     private readonly TweenableFloat _mainVolumeTweenable = new();
+    public Wrapped<int> VolumeInt { get; set; } = new(10);
+    public float Volume => VolumeInt.Value / 20f;
 
     public void FreshStart(bool isMain)
     {
@@ -86,11 +89,9 @@ public class MusicPlayer
     public void UpdateTween(float dt)
     {
         _faderTween.Update(dt);
-        _mainTrack.Volume = _mainVolumeTweenable * MusicPlayer.MasterVolume;
-        _lowTrack.Volume = _lowVolumeTweenable * MusicPlayer.MasterVolume;
+        _mainTrack.Volume = _mainVolumeTweenable * Volume;
+        _lowTrack.Volume = _lowVolumeTweenable * Volume;
     }
-
-    private const float MasterVolume = 0.5f;
 
     private bool IsFirstTouch()
     {

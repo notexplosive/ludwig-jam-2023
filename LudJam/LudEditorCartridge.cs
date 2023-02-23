@@ -92,7 +92,7 @@ public class LudEditorCartridge : NoProviderCartridge
         painter.EndSpriteBatch();
 
         // Draw scrim
-        if (_state.CurrentMode != Mode.Main)
+        if (_state.CurrentEditorMode != EditorMode.Main)
         {
             painter.BeginSpriteBatch();
             painter.DrawRectangle(Runtime.Window.RenderResolution.ToRectangleF(),
@@ -100,7 +100,7 @@ public class LudEditorCartridge : NoProviderCartridge
             painter.EndSpriteBatch();
         }
 
-        if (_state.CurrentMode == Mode.Typing)
+        if (_state.CurrentEditorMode == EditorMode.Typing)
         {
             painter.BeginSpriteBatch();
             var textRect = _textField.OutputRectangle;
@@ -113,7 +113,7 @@ public class LudEditorCartridge : NoProviderCartridge
             painter.EndSpriteBatch();
         }
 
-        if (_state.CurrentMode == Mode.Opening)
+        if (_state.CurrentEditorMode == EditorMode.Opening)
         {
             painter.BeginSpriteBatch();
             _openGui.Draw(painter, _theme);
@@ -140,7 +140,7 @@ public class LudEditorCartridge : NoProviderCartridge
             game.LoadJson(_state.Level.ToJson(), _state.SavedName);
         }
         
-        if (_state.CurrentMode == Mode.Main)
+        if (_state.CurrentEditorMode == EditorMode.Main)
         {
             var pressedNumber = PressedNumberRowButton(input);
             if (pressedNumber != null)
@@ -178,14 +178,14 @@ public class LudEditorCartridge : NoProviderCartridge
             HotKeys.RunBinding(input, HotKeys.CtrlShift, Keys.S, SaveWithNewName);
             HotKeys.RunBinding(input, HotKeys.Ctrl, Keys.O, PresentOpenDialogue);
         }
-        else if (_state.CurrentMode == Mode.Typing)
+        else if (_state.CurrentEditorMode == EditorMode.Typing)
         {
             _textField.UpdateInput(input, hitTestStack);
 
             HotKeys.RunBinding(input, HotKeys.NoModifiers, Keys.Escape, UnPrompt);
             HotKeys.RunBinding(input, HotKeys.NoModifiers, Keys.Enter, SubmitPrompt);
         }
-        else if (_state.CurrentMode == Mode.Opening)
+        else if (_state.CurrentEditorMode == EditorMode.Opening)
         {
             HotKeys.RunBinding(input, HotKeys.NoModifiers, Keys.Escape, UnPrompt);
             _openGui.UpdateInput(input, hitTestStack);
@@ -200,7 +200,7 @@ public class LudEditorCartridge : NoProviderCartridge
 
     private void PresentOpenDialogue()
     {
-        _state.CurrentMode = Mode.Opening;
+        _state.CurrentEditorMode = EditorMode.Opening;
         _openGui.Clear();
 
         var fileNames = new List<string>();
@@ -247,13 +247,13 @@ public class LudEditorCartridge : NoProviderCartridge
 
     private void SubmitPrompt()
     {
-        _state.CurrentMode = Mode.Main;
+        _state.CurrentEditorMode = EditorMode.Main;
         _promptCallback?.Invoke(_textField.Text);
     }
 
     private void UnPrompt()
     {
-        _state.CurrentMode = Mode.Main;
+        _state.CurrentEditorMode = EditorMode.Main;
         _promptCallback = null;
     }
 
@@ -281,7 +281,7 @@ public class LudEditorCartridge : NoProviderCartridge
     private void PromptForName()
     {
         _promptText = "Please name your level:";
-        _state.CurrentMode = Mode.Typing;
+        _state.CurrentEditorMode = EditorMode.Typing;
         _promptCallback = str => { SaveAs(str); };
     }
 
