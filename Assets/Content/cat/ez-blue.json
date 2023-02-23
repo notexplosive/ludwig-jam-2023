@@ -1,0 +1,42 @@
+{
+  "Content": [
+    {
+      "Name": "Spawn",
+      "X": 482.55573,
+      "Y": 753.2779
+    },
+    {
+      "Name": "Cat",
+      "X": 1547.8334,
+      "Y": 829.6668
+    },
+    {
+      "Name": "Wall",
+      "Width": 627,
+      "Height": 158,
+      "X": 183,
+      "Y": 858,
+      "WallType": 0
+    },
+    {
+      "Name": "Wall",
+      "Width": 581,
+      "Height": 159,
+      "X": 1202,
+      "Y": 861,
+      "WallType": 0
+    },
+    {
+      "Name": "Wall",
+      "Width": 244,
+      "Height": 1396,
+      "X": 897,
+      "Y": -88,
+      "WallType": 1
+    },
+    {
+      "Name": "Par",
+      "Amount": 2
+    }
+  ]
+}

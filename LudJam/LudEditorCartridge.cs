@@ -22,7 +22,10 @@ public class LudEditorCartridge : NoProviderCartridge
     public const int BrickScalar = 8;
     public const int BackgroundScalar = 4;
     private int _currentToolIndex;
+    private float _openDialogueBottom;
     private Gui _openGui = new();
+    private ScrollableArea _openScrollableArea = null!;
+    private Widget _openWidget = null!;
     private Action<string>? _promptCallback;
     private string _promptText = string.Empty;
     private EditorState _state = new();
@@ -41,10 +44,14 @@ public class LudEditorCartridge : NoProviderCartridge
     public override void OnCartridgeStarted()
     {
         G.Music.FadeToOff();
-        
+
         var bigFont = Client.Assets.GetFont("engine/logo-font", 72);
         var smallFont = Client.Assets.GetFont("engine/logo-font", 32);
         _theme = new SimpleGuiTheme(Color.White, Color.Black, Color.Transparent, smallFont);
+        _openScrollableArea = new ScrollableArea(Runtime.Window.RenderResolution,
+            Runtime.Window.RenderResolution.ToRectangleF(), Depth.Front);
+        _openScrollableArea.EnabledAxes = new XyBool(false, true);
+        _openWidget = new Widget(Runtime.Window.RenderResolution.ToRectangleF(), Depth.Middle);
         _openGui = new Gui();
         _textField = new TextInputWidget(
             Runtime.Window.RenderResolution.ToRectangleF().InflatedMaintainAspectRatio(-300),
@@ -67,6 +74,15 @@ public class LudEditorCartridge : NoProviderCartridge
     {
         _textField.PrepareDraw(painter, _theme);
         _openGui.PrepareCanvases(painter, _theme);
+
+        Client.Graphics.PushCanvas(_openWidget.Canvas);
+        painter.BeginSpriteBatch();
+        _openGui.Draw(painter, _theme);
+        var openWorldBoundaries = _openScrollableArea.InnerWorldBoundaries;
+        openWorldBoundaries.Size = new Vector2(openWorldBoundaries.Size.X, _openDialogueBottom);
+        _openScrollableArea.InnerWorldBoundaries = openWorldBoundaries;
+        painter.EndSpriteBatch();
+        Client.Graphics.PopCanvas();
 
         G.DrawBackground(painter, Runtime.Window.RenderResolution, _state.Camera);
 
@@ -91,7 +107,8 @@ public class LudEditorCartridge : NoProviderCartridge
             statusText.Append(" ");
         }
 
-        painter.DrawStringWithinRectangle(Client.Assets.GetFont("engine/console-font", 32),statusText.ToString(), Runtime.Window.RenderResolution.ToRectangleF(), Alignment.TopLeft, new DrawSettings());
+        painter.DrawStringWithinRectangle(Client.Assets.GetFont("engine/console-font", 32), statusText.ToString(),
+            Runtime.Window.RenderResolution.ToRectangleF(), Alignment.TopLeft, new DrawSettings());
         painter.EndSpriteBatch();
 
         // Draw scrim
@@ -118,8 +135,12 @@ public class LudEditorCartridge : NoProviderCartridge
 
         if (_state.CurrentEditorMode == EditorMode.Opening)
         {
+            painter.BeginSpriteBatch(_openScrollableArea.CanvasToScreen);
+            _openWidget.Draw(painter);
+            painter.EndSpriteBatch();
+            
             painter.BeginSpriteBatch();
-            _openGui.Draw(painter, _theme);
+            _openScrollableArea.DrawScrollbars(painter, _theme);
             painter.EndSpriteBatch();
         }
     }
@@ -142,7 +163,7 @@ public class LudEditorCartridge : NoProviderCartridge
 
             game.LoadJson(_state.Level.ToJson(), _state.SavedName);
         }
-        
+
         if (_state.CurrentEditorMode == EditorMode.Main)
         {
             var pressedNumber = PressedNumberRowButton(input);
@@ -191,7 +212,9 @@ public class LudEditorCartridge : NoProviderCartridge
         else if (_state.CurrentEditorMode == EditorMode.Opening)
         {
             HotKeys.RunBinding(input, HotKeys.NoModifiers, Keys.Escape, UnPrompt);
-            _openGui.UpdateInput(input, hitTestStack);
+            _openGui.UpdateInput(input, hitTestStack.AddLayer(_openScrollableArea.ScreenToCanvas, Depth.Middle));
+            _openScrollableArea.UpdateInput(input, hitTestStack);
+            _openScrollableArea.DoScrollWithMouseWheel(input, 25);
         }
     }
 
@@ -232,6 +255,8 @@ public class LudEditorCartridge : NoProviderCartridge
             var fileInfo = new FileInfo(fileNames[i]);
             var friendlyName = fileInfo.Name.Substring(0, fileInfo.Name.Length - fileInfo.Extension.Length);
             _openGui.Button(buttonElement.Rectangle, friendlyName, Depth.Middle, () => { Open(friendlyName); });
+
+            _openDialogueBottom = buttonElement.Rectangle.Bottom;
         }
     }
 
@@ -246,6 +271,10 @@ public class LudEditorCartridge : NoProviderCartridge
     {
         _state.Level.LoadFromJson(text, false);
         _state.SavedName = cachedLevelName;
+        foreach (var tool in _tools)
+        {
+            tool.OnLevelLoad(_state.Level);
+        }
     }
 
     private void SubmitPrompt()
@@ -278,7 +307,8 @@ public class LudEditorCartridge : NoProviderCartridge
         var fileName = $"{stateSavedName}.json";
 
         Client.Debug.Log($"Writing file {fileName}");
-        G.EditorDevelopmentFileSystem(Runtime).WriteToFile($"Content/cat/{fileName}", _state.Level.ToJson().SplitLines());
+        G.EditorDevelopmentFileSystem(Runtime)
+            .WriteToFile($"Content/cat/{fileName}", _state.Level.ToJson().SplitLines());
     }
 
     private void PromptForName()

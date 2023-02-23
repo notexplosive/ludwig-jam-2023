@@ -31,4 +31,9 @@ public class ParTool : IEditorTool
     public void Draw(Painter painter)
     {
     }
+
+    public void OnLevelLoad(Level level)
+    {
+        ParCount = level.ParStrokeCount;
+    }
 }

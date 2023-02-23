@@ -24,4 +24,9 @@ public class PlaceCatTool : IEditorTool
     {
         
     }
+
+    public void OnLevelLoad(Level level)
+    {
+        
+    }
 }

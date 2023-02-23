@@ -21,7 +21,7 @@ public class NoJumpingZone : BaseComponent
 
     public override void Draw(Painter painter)
     {
-        painter.DrawRectangle(Rectangle,new DrawSettings{Color = Color.Purple.WithMultipliedOpacity(0.5f), Depth = Depth.Front});
+        painter.DrawRectangle(Rectangle,new DrawSettings{Color = Color.Purple.WithMultipliedOpacity(0.5f), Depth = Depth.Front + 120});
     }
 
     public override void UpdateInput(ConsumableInput input, HitTestStack hitTestStack)

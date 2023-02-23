@@ -1,5 +1,13 @@
 tutorial
-come-hither
+come hither
 canyon
+ez-blue
 toggle-1
-over-under
+ez-red
+in-and-out
+zig-zag
+zig-zag2
+moonshot
+ez-nojump
+go-around
+dense-core

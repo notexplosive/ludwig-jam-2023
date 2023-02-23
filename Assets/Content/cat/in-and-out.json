@@ -1,0 +1,66 @@
+{
+  "Content": [
+    {
+      "Name": "Wall",
+      "Width": 124,
+      "Height": 2104,
+      "X": 808,
+      "Y": -1319,
+      "WallType": 1
+    },
+    {
+      "Name": "Spawn",
+      "X": 591.0,
+      "Y": 596.0
+    },
+    {
+      "Name": "Cat",
+      "X": 574.3893,
+      "Y": -1013.1113
+    },
+    {
+      "Name": "Wall",
+      "Width": 574,
+      "Height": 109,
+      "X": 314,
+      "Y": 809,
+      "WallType": 0
+    },
+    {
+      "Name": "Wall",
+      "Width": 459,
+      "Height": 105,
+      "X": 313,
+      "Y": 125,
+      "WallType": 0
+    },
+    {
+      "Name": "Wall",
+      "Width": 622,
+      "Height": 144,
+      "X": 305,
+      "Y": -1492,
+      "WallType": 0
+    },
+    {
+      "Name": "Wall",
+      "Width": 134,
+      "Height": 2241,
+      "X": 154,
+      "Y": -1395,
+      "WallType": 1
+    },
+    {
+      "Name": "Wall",
+      "Width": 469,
+      "Height": 157,
+      "X": 321,
+      "Y": -853,
+      "WallType": 2
+    },
+    {
+      "Name": "Par",
+      "Amount": 4
+    }
+  ]
+}

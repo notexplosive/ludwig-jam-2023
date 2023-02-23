@@ -15,7 +15,7 @@ namespace LudJam;
 
 public class PlayerMovement : BaseComponent
 {
-    private const int PhysicsTimeScale = 3;
+    private const float PhysicsTimeScale = 2f;
     private readonly BoundingRectangle _boundingRect;
     private readonly Drag<Vector2> _drag;
     private readonly TweenableFloat _flameHeight = new();
@@ -67,6 +67,16 @@ public class PlayerMovement : BaseComponent
     public override void Update(float dt)
     {
         _canJump = CalculateCanJump();
+
+        if (!_canJump)
+        {
+            _spriteFrameRenderer.Color = Color.Purple;
+        }
+        else
+        {
+            _spriteFrameRenderer.Color = G.CharacterColor;
+        }
+        
         if (_canJump != _previousCanJump)
         {
             if (_canJump)
@@ -101,7 +111,7 @@ public class PlayerMovement : BaseComponent
         if (_previousDragDelta != DragDelta)
         {
             // we don't need to stop then play here because we just play the sound when available
-            G.PlaySoundEffect("cat/spark", new SoundEffectSettings {Volume = 0.25f});
+            G.PlaySoundEffect("cat/spark", new SoundEffectSettings {Volume = 0.5f});
         }
 
         _previousDragDelta = DragDelta;
@@ -298,7 +308,7 @@ public class PlayerMovement : BaseComponent
         {
             if (_canJump)
             {
-                G.StopThenPlaySound("cat/snap", new SoundEffectSettings());
+                G.StopThenPlaySound("cat/snap", new SoundEffectSettings{Volume = 1f});
                 _physics.RaiseFreezeSemaphore();
                 _drag.Start(input.Mouse.Position());
             }
@@ -307,7 +317,7 @@ public class PlayerMovement : BaseComponent
                 G.ImpactFreeze(0.05f);
                 for (var i = 0; i < 20; i++)
                 {
-                    SpawnSmokeParticle(LudGameCartridge.GetRandomVector(Client.Random.Dirty) * 500, Color.Purple);
+                    SpawnSmokeParticle(LudGameCartridge.GetRandomVector(Client.Random.Dirty) * 500, Color.Purple, startPosition: input.Mouse.Position(hitTestStack.WorldMatrix));
                 }
 
                 G.PlaySoundEffect("cat/glass", new SoundEffectSettings());
@@ -360,15 +370,17 @@ public class PlayerMovement : BaseComponent
         Actor.Scene.Broadcast(new JumpMessage());
     }
 
-    private void SpawnSmokeParticle(Vector2 trendingDirection, Color color, float sizeScalar = 1f)
+    private void SpawnSmokeParticle(Vector2 trendingDirection, Color color, float sizeScalar = 1f, Vector2? startPosition = null)
     {
+        startPosition ??= Actor.Position;
+        
         Actor.Scene.AddDeferredAction(() =>
         {
             var particle = Actor.Scene.AddNewActor();
             particle.Scale =
                 LudGameCartridge.ActorScale * (Client.Random.Dirty.NextSign() * Client.Random.Dirty.NextFloat() / 2f) +
                 new Scale2D(0.25f * sizeScalar);
-            particle.Position = Actor.Position + LudGameCartridge.GetRandomVector(Client.Random.Dirty) *
+            particle.Position = startPosition.Value + LudGameCartridge.GetRandomVector(Client.Random.Dirty) *
                 Client.Random.Dirty.NextFloat() * 20f;
 
             particle.AddComponent<SpriteFrameRenderer>()

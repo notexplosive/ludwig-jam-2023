@@ -24,4 +24,9 @@ public class PlaceSpawnTool : IEditorTool
     {
         
     }
+
+    public void OnLevelLoad(Level level)
+    {
+        
+    }
 }

@@ -72,7 +72,7 @@ public static class G
     public static void PlaySoundEffect(string soundPath, SoundEffectSettings settings)
     {
         var sound = Client.Assets.GetSoundEffectInstance(soundPath);
-        sound.Volume = settings.Volume;
+        sound.Volume = settings.Volume * G.Music.Volume;
         sound.Pan = settings.Pan;
         sound.Pitch = settings.Pitch;
         sound.Play();

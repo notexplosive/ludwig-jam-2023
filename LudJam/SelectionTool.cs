@@ -24,9 +24,8 @@ public class SelectionTool : IEditorTool
         {
             if (input.Keyboard.GetButton(Keys.Delete).WasPressed)
             {
-                // sneaky sneaky lemon
                 var captured = _selectedActor;
-                level.Scene.AddDeferredAction(() => level.Scene.RemoveActor(captured));
+                captured.DestroyDeferred();
                 _selectedActor = null;
             }
         }
@@ -143,5 +142,10 @@ public class SelectionTool : IEditorTool
                     new LineDrawSettings {Color = Color.Orange, Thickness = 5});
             }
         }
+    }
+
+    public void OnLevelLoad(Level level)
+    {
+        _selectedActor = null;
     }
 }

@@ -7,8 +7,8 @@
     },
     {
       "Name": "Spawn",
-      "X": 65.8905,
-      "Y": 794.2772
+      "X": 67.111206,
+      "Y": 782.9442
     },
     {
       "Name": "Wall",
@@ -21,7 +21,7 @@
     {
       "Name": "Wall",
       "Width": 130,
-      "Height": 1074,
+      "Height": 1298,
       "X": 1422,
       "Y": -121,
       "WallType": 0
@@ -37,9 +37,9 @@
     {
       "Name": "Wall",
       "Width": 305,
-      "Height": 279,
+      "Height": 270,
       "X": -94,
-      "Y": 891,
+      "Y": 899,
       "WallType": 0
     },
     {
@@ -52,15 +52,15 @@
     },
     {
       "Name": "Wall",
-      "Width": 1282,
+      "Width": 1651,
       "Height": 204,
-      "X": 220,
-      "Y": 969,
+      "X": 74,
+      "Y": 1196,
       "WallType": 0
     },
     {
       "Name": "Par",
-      "Amount": 2
+      "Amount": 3
     }
   ]
 }

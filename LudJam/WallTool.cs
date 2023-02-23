@@ -57,4 +57,9 @@ public class WallTool : IEditorTool
             painter.DrawLineRectangle(RectangleF.FromCorners( _startPosition.Value, _currentPosition), new LineDrawSettings{Thickness = 3, Color = Color.Orange, Depth = Depth.Front});
         }
     }
+
+    public void OnLevelLoad(Level level)
+    {
+        
+    }
 }

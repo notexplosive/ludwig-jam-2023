@@ -332,7 +332,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             totalRectangle = totalRectangle.InflatedMaintainAspectRatio(longestLength);
 
             // safe zone
-            totalRectangle = totalRectangle.InflatedMaintainAspectRatio(100);
+            totalRectangle = totalRectangle.InflatedMaintainAspectRatio(Math.Min(100, longestLength / 2f));
 
             _cameraTargetRect = totalRectangle;
             _cameraFocusObjects.Clear();
@@ -411,17 +411,19 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public void MoveToNextLevel()
     {
-        HideCurtain();
-
         _currentLevelIndex++;
         LoadCurrentLevel();
+        HideCurtain();
     }
 
     private void HideCurtain(float delay = 0)
     {
         _levelTransitionTween.Clear();
         _curtainPercent.Value = 0;
+
         _levelTransitionTween.Add(new WaitSecondsTween(delay));
+        _levelTransitionTween.Add(new WaitSecondsTween(0.1f));
+        _levelTransitionTween.Add(new CallbackTween(() => { _camera.ViewBounds = _cameraTargetRect; }));
         _levelTransitionTween.Add(_curtainPercent.TweenTo(1f, G.TransitionDuration, Ease.QuadSlowFast));
     }
 
@@ -452,12 +454,12 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public void LoadJson(string levelJson, string? levelName)
     {
-        HideCurtain();
         _cachedLevelJson = levelJson;
         _currentLevel = new Level().LoadFromJson(levelJson, true);
         _cachedLevelName = levelName;
         _isEditorSession = true;
         _mode = GameMode.Playing;
+        HideCurtain();
     }
 
     private void LoadCachedEditorLevel()
