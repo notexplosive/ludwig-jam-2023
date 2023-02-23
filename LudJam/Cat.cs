@@ -130,6 +130,13 @@ public class Cat : BaseComponent
 
         _tween.Add(new WaitSecondsTween(1f));
 
-        _tween.Add(new CallbackTween(() => { LudGameCartridge.Instance.TransitionToNextLevel(); }));
+        if (_level == null || !_level.IsPassedPar)
+        {
+            _tween.Add(new CallbackTween(() => { LudGameCartridge.Instance.TransitionToNextLevel(); }));
+        }
+        else
+        {
+            _tween.Add(new CallbackTween(() => { LudGameCartridge.Instance.ResetCurrentLevel(); }));
+        }
     }
 }

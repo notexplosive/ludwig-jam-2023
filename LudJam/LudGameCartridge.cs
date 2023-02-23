@@ -438,7 +438,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         _levelTransitionTween.Add(_curtainPercent.TweenTo(0f, G.TransitionDuration, Ease.QuadFastSlow));
     }
 
-    public void ResetLevelAfterTimer()
+    public void ResetCurrentLevel()
     {
         ShowCurtain();
         _levelTransitionTween.Add(new CallbackTween(LoadCurrentLevel));

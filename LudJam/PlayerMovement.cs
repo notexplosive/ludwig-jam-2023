@@ -221,7 +221,7 @@ public class PlayerMovement : BaseComponent
                 .Init(Client.Assets.GetAsset<SpriteSheet>("Sheet"), 8, G.CharacterColor.DimmedBy(0.2f));
             debris.AddComponent<RandomSpin>().Init(newVelocity.Normalized().X / 50f);
             debris.AddComponent<CameraFocusPoint>();
-            LudGameCartridge.Instance.ResetLevelAfterTimer();
+            LudGameCartridge.Instance.ResetCurrentLevel();
         });
     }
 
