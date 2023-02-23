@@ -19,13 +19,15 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 {
     public static LudGameCartridge Instance = null!;
     private readonly Camera _camera = new(new Vector2(1920, 1080));
-    private readonly List<Vector2> _cameraFocusObjects = new();
     private readonly Gui _creditsGui = new();
+    private readonly Gui _levelSelectGui = new();
+    private readonly Gui _mainMenuGui = new();
+    private readonly List<Vector2> _cameraFocusObjects = new();
     private readonly TweenableFloat _curtainPercent = new();
     private readonly Wrapped<bool> _fullscreenSetting = new();
-    private readonly Gui _levelSelectGui = new();
     private readonly SequenceTween _levelTransitionTween = new();
-    private readonly Gui _mainMenuGui = new();
+    private SimpleGuiTheme _mainGuiTheme = null!;
+    private SimpleGuiTheme _levelSelectGuiTheme;
     private string? _cachedLevelJson;
     private string? _cachedLevelName;
     private RectangleF _cameraTargetRect;
@@ -33,9 +35,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     private int _currentLevelIndex;
     private bool _isEditorSession;
     private GameMode _mode;
-    private SimpleGuiTheme _mainGuiTheme = null!;
     private float _totalElapsedTime;
-    private SimpleGuiTheme _levelSelectGuiTheme;
 
     public LudGameCartridge(IRuntime runtime) : base(runtime)
     {
