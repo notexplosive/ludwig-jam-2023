@@ -56,8 +56,8 @@ public class LudEditorCartridge : NoProviderCartridge
             new PlaceCatTool(),
             new PlaceSpawnTool(),
             new WallTool(Level.WallType.Solid),
-            new WallTool(Level.WallType.ToggleWallStartOn),
-            new WallTool(Level.WallType.ToggleWallStartOff),
+            new WallTool(Level.WallType.ToggleWallEven),
+            new WallTool(Level.WallType.ToggleWallOdd),
             new WallTool(Level.WallType.NoJumpingZone),
             new ParTool()
         };
@@ -91,7 +91,7 @@ public class LudEditorCartridge : NoProviderCartridge
             statusText.Append(" ");
         }
 
-        painter.DrawDebugStringAtPosition(statusText.ToString(), new Vector2(0), new DrawSettings());
+        painter.DrawStringWithinRectangle(Client.Assets.GetFont("engine/console-font", 32),statusText.ToString(), Runtime.Window.RenderResolution.ToRectangleF(), Alignment.TopLeft, new DrawSettings());
         painter.EndSpriteBatch();
 
         // Draw scrim

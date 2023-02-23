@@ -19,10 +19,9 @@ public class Level
     public enum WallType
     {
         Solid,
-        ToggleWallStartOn,
-        ToggleWallStartOff,
+        ToggleWallEven,
+        ToggleWallOdd,
         NoJumpingZone,
-        BouncyWall
     }
 
     private Actor? _cat;
@@ -81,9 +80,14 @@ public class Level
                 wall.AddComponent<WallRenderer>().Init(G.WallColor1, G.WallColor2);
             }
 
-            if (wallType == WallType.ToggleWallStartOff || wallType == WallType.ToggleWallStartOn)
+            if (wallType == WallType.ToggleWallOdd || wallType == WallType.ToggleWallEven)
             {
-                wall.AddComponent<ToggleWall>().Init(wallType == WallType.ToggleWallStartOn);
+                wall.AddComponent<ToggleWall>().Init(wallType == WallType.ToggleWallEven);
+            }
+
+            if (wallType == WallType.NoJumpingZone)
+            {
+                wall.AddComponent<NoJumpingZone>();
             }
         });
     }

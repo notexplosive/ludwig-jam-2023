@@ -27,13 +27,13 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 {
 	float4 color = tex2D(SpriteTextureSampler, input.TextureCoordinates);
 	
-	float4 result = input.Color;
-	if(color.a == 0)
+	// by default, render nothing
+	float4 result = float4(0,0,0,0);
+
+	// ideally this means we don't draw shadows on partly transparent things but this doesn't work
+	if(color.a == 1)
 	{
-	    result = float4(0,0,0,0);
-	}
-	else
-	{
+		// result is black
 	    result = float4(0,0,0,1); 
 	}
 	return result;

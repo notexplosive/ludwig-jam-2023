@@ -13,6 +13,9 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin cat/c senor.json
+/copy:cat/c senor.json
+
 #begin cat/canyon.json
 /copy:cat/canyon.json
 
@@ -30,6 +33,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:cat/crashtroid-xenon.ogg
+
+#begin cat/enter-goop.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/enter-goop.ogg
 
 #begin cat/firework.ogg
 /importer:OggImporter
@@ -56,8 +65,20 @@
 #begin cat/game.json
 /copy:cat/game.json
 
+#begin cat/glass.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/glass.ogg
+
 #begin cat/grungle.json
 /copy:cat/grungle.json
+
+#begin cat/leave-goop.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:cat/leave-goop.ogg
 
 #begin cat/level-sequence.txt
 /copy:cat/level-sequence.txt

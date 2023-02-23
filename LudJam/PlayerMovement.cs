@@ -15,18 +15,21 @@ namespace LudJam;
 
 public class PlayerMovement : BaseComponent
 {
+    private const int PhysicsTimeScale = 3;
     private readonly BoundingRectangle _boundingRect;
     private readonly Drag<Vector2> _drag;
     private readonly TweenableFloat _flameHeight = new();
     private readonly SequenceTween _flameTween = new();
     private readonly SimplePhysics _physics;
     private readonly SpriteFrameRenderer _spriteFrameRenderer;
+    private bool _canJump = true;
     private float _elapsedTime;
-    private float _mostRecentMovedAngle;
-    private float _smokeTimer;
     private Level _level = null!;
+    private float _mostRecentMovedAngle;
     private Vector2 _mostRecentVelocity;
+    private bool _previousCanJump = true;
     private Vector2 _previousDragDelta;
+    private float _smokeTimer;
 
     public PlayerMovement(Actor actor) : base(actor)
     {
@@ -35,14 +38,14 @@ public class PlayerMovement : BaseComponent
         _spriteFrameRenderer = RequireComponent<SpriteFrameRenderer>();
         _drag = new Drag<Vector2>();
         _physics.IsGravityEnabled = false;
-        _physics.TimeScale = 3;
+        _physics.TimeScale = PlayerMovement.PhysicsTimeScale;
     }
 
     public bool IsDraggingAtAll => _drag.IsDragging;
     public bool IsMeaningfullyDragging => IsDraggingAtAll && DragDelta.Length() > 5;
-    
+
     /// <summary>
-    /// this should be the only thing referencing _drag.TotalDrag
+    ///     this should be the only thing referencing _drag.TotalDrag
     /// </summary>
     public Vector2 DragDelta
     {
@@ -63,6 +66,32 @@ public class PlayerMovement : BaseComponent
 
     public override void Update(float dt)
     {
+        _canJump = CalculateCanJump();
+        if (_canJump != _previousCanJump)
+        {
+            if (_canJump)
+            {
+                G.Music.FadeToMain();
+                for (int i = 0; i < 20; i++)
+                {
+                    SpawnSmokeParticle(_physics.Velocity, Color.Purple, 2f);
+                }
+                G.PlaySoundEffect("cat/leave-goop", new SoundEffectSettings{Volume = 1f});
+            }
+            else
+            {
+                G.Music.FadeToLow();
+                for (int i = 0; i < 20; i++)
+                {
+                    SpawnSmokeParticle(-_physics.Velocity, Color.Purple, 2f);
+                }
+                G.PlaySoundEffect("cat/enter-goop", new SoundEffectSettings{Volume = 1f});
+            }
+        }
+
+        _previousCanJump = _canJump;
+        _physics.TimeScale = PlayerMovement.PhysicsTimeScale * (_canJump ? 1f : 1 / 2f);
+
         LudGameCartridge.Instance.AddCameraFocusPoint(Actor.Position);
         LudGameCartridge.Instance.AddCameraFocusPoint(Actor.Position + JumpImpulseVelocity);
 
@@ -72,22 +101,23 @@ public class PlayerMovement : BaseComponent
         if (_previousDragDelta != DragDelta)
         {
             // we don't need to stop then play here because we just play the sound when available
-            G.PlaySoundEffect("cat/spark", new SoundEffectSettings{Volume = 0.25f});
+            G.PlaySoundEffect("cat/spark", new SoundEffectSettings {Volume = 0.25f});
         }
-        
+
         _previousDragDelta = DragDelta;
-        
+
         if (IsMeaningfullyDragging)
         {
             var pullPercent = DragDelta.Length() / MaxDelta;
-            G.Music.SetLowPercent(pullPercent);
-            _spriteFrameRenderer.Offset = LudGameCartridge.GetRandomVector(Client.Random.Dirty) * JumpImpulseVelocity / 100;
+            G.Music.SetLowPercent(pullPercent / 4f);
+            _spriteFrameRenderer.Offset =
+                LudGameCartridge.GetRandomVector(Client.Random.Dirty) * JumpImpulseVelocity / 100;
         }
         else
         {
             _spriteFrameRenderer.Offset = Vector2.Zero;
         }
-        
+
         if (!_physics.IsFrozen)
         {
             if (_physics.Velocity.Length() > 0)
@@ -121,7 +151,6 @@ public class PlayerMovement : BaseComponent
                 }
             }
 
-
             foreach (var solid in Actor.Scene.GetAllComponentsMatching<Solid>())
             {
                 var otherRect = solid.Rectangle;
@@ -130,10 +159,10 @@ public class PlayerMovement : BaseComponent
                 var intersection = RectangleF.Intersect(myRect, otherRect);
                 if (Math.Abs(intersection.Area - myRect.Area) < 0.1f)
                 {
-                    G.StopThenPlaySound("engine/ouch", new SoundEffectSettings{Volume = 0.5f});
+                    G.StopThenPlaySound("engine/ouch", new SoundEffectSettings {Volume = 0.5f});
                     G.ImpactFreeze(0.05f);
                     G.Music.FadeToLow(0.1f);
-                    SpawnDeadBody(new Vector2(0,20));
+                    SpawnDeadBody(new Vector2(0, 20));
                 }
                 else if (otherRect.Intersects(myRect))
                 {
@@ -158,9 +187,9 @@ public class PlayerMovement : BaseComponent
                         newVelocity.X = -newVelocity.X;
                     }
                     // ReSharper restore CompareOfFloatsByEqualityOperator
-                    G.StopThenPlaySound("cat/pained-cough", new SoundEffectSettings{Volume = 1f});
 
-                    
+                    G.StopThenPlaySound("cat/pained-cough", new SoundEffectSettings {Volume = 1f});
+
                     for (var i = 0; i < 25; i++)
                     {
                         SpawnSmokeParticle(newVelocity, G.CharacterColor);
@@ -261,9 +290,22 @@ public class PlayerMovement : BaseComponent
     {
         if (input.Mouse.GetButton(MouseButton.Left).WasPressed)
         {
-            G.StopThenPlaySound("cat/snap", new SoundEffectSettings());
-            _physics.RaiseFreezeSemaphore();
-            _drag.Start(input.Mouse.Position());
+            if (_canJump)
+            {
+                G.StopThenPlaySound("cat/snap", new SoundEffectSettings());
+                _physics.RaiseFreezeSemaphore();
+                _drag.Start(input.Mouse.Position());
+            }
+            else
+            {
+                G.ImpactFreeze(0.05f);
+                for (var i = 0; i < 20; i++)
+                {
+                    SpawnSmokeParticle(LudGameCartridge.GetRandomVector(Client.Random.Dirty) * 500, Color.Purple);
+                }
+
+                G.PlaySoundEffect("cat/glass", new SoundEffectSettings());
+            }
         }
 
         _drag.AddDelta(input.Mouse.Delta());
@@ -293,20 +335,33 @@ public class PlayerMovement : BaseComponent
         }
     }
 
+    private bool CalculateCanJump()
+    {
+        foreach (var noJumpZone in Actor.Scene.GetAllComponentsMatching<NoJumpingZone>())
+        {
+            if (noJumpZone.Rectangle.Contains(Actor.Position))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private void Jump()
     {
         _physics.Velocity = CalculateVelocityAfterJump();
         Actor.Scene.Broadcast(new JumpMessage());
     }
 
-    private void SpawnSmokeParticle(Vector2 trendingDirection, Color color)
+    private void SpawnSmokeParticle(Vector2 trendingDirection, Color color, float sizeScalar = 1f)
     {
         Actor.Scene.AddDeferredAction(() =>
         {
             var particle = Actor.Scene.AddNewActor();
             particle.Scale =
                 LudGameCartridge.ActorScale * (Client.Random.Dirty.NextSign() * Client.Random.Dirty.NextFloat() / 2f) +
-                new Scale2D(0.25f);
+                new Scale2D(0.25f * sizeScalar);
             particle.Position = Actor.Position + LudGameCartridge.GetRandomVector(Client.Random.Dirty) *
                 Client.Random.Dirty.NextFloat() * 20f;
 
