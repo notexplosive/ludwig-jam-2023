@@ -257,6 +257,12 @@ public class PlayerMovement : BaseComponent
             }
         }
 
+        if (_level.StrokeCount == 0 && _elapsedTime > 3f)
+        {
+            painter.DrawStringAtPosition(Client.Assets.GetFont("cat/Font", 64), "Click and Drag to move",
+                Actor.Position + new Vector2(0,-200), new DrawSettings{Origin = DrawOrigin.Center});
+        }
+        
         if (!IsDraggingAtAll)
         {
             Actor.Angle = _physics.Velocity.GetAngleFromUnitX();

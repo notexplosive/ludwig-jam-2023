@@ -19,21 +19,21 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 {
     public static LudGameCartridge Instance = null!;
     private readonly Camera _camera = new(new Vector2(1920, 1080));
-    private readonly Gui _creditsGui = new();
-    private readonly Gui _levelSelectGui = new();
-    private readonly Gui _mainMenuGui = new();
     private readonly List<Vector2> _cameraFocusObjects = new();
+    private readonly Gui _creditsGui = new();
     private readonly TweenableFloat _curtainPercent = new();
     private readonly Wrapped<bool> _fullscreenSetting = new();
+    private readonly Gui _levelSelectGui = new();
     private readonly SequenceTween _levelTransitionTween = new();
-    private SimpleGuiTheme _mainGuiTheme = null!;
-    private SimpleGuiTheme _levelSelectGuiTheme;
+    private readonly Gui _mainMenuGui = new();
     private string? _cachedLevelJson;
     private string? _cachedLevelName;
     private RectangleF _cameraTargetRect;
     private Level? _currentLevel;
     private int _currentLevelIndex;
     private bool _isEditorSession;
+    private SimpleGuiTheme _levelSelectGuiTheme;
+    private SimpleGuiTheme _mainGuiTheme = null!;
     private GameMode _mode;
     private float _totalElapsedTime;
 
@@ -76,8 +76,10 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
     {
         G.Music.FadeToMain();
         _mode = GameMode.MainMenu;
-        _mainGuiTheme = new SimpleGuiTheme(Color.White, Color.Black, Color.White, Client.Assets.GetFont("cat/Font", 72));
-        _levelSelectGuiTheme = new SimpleGuiTheme(Color.White, Color.Black, Color.White, Client.Assets.GetFont("cat/Font", 32));
+        _mainGuiTheme =
+            new SimpleGuiTheme(Color.White, Color.Black, Color.White, Client.Assets.GetFont("cat/Font", 72));
+        _levelSelectGuiTheme =
+            new SimpleGuiTheme(Color.White, Color.Black, Color.White, Client.Assets.GetFont("cat/Font", 32));
 
         var buttonSize = new Vector2(500, 150);
         var buttonX = 100;
@@ -111,7 +113,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
                 _mode = GameMode.MainMenu;
                 ShowCurtain();
             });
-        
+
         var safeZone = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-100, -100);
 
         _mainMenuGui.DynamicLabel(safeZone, Depth.Middle,
@@ -213,27 +215,14 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         _currentLevel?.Scene.DrawContent(painter);
         painter.EndSpriteBatch();
 
+        // par text shadow
+        painter.BeginSpriteBatch(Matrix.CreateTranslation(new Vector3(new Vector2(4, 4), 0)), shader);
+        DrawParText(painter);
+        painter.EndSpriteBatch();
+        
+        // par text
         painter.BeginSpriteBatch();
-        var safeAreaRect = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-20, -20);
-
-        // draw Par text
-        if (_currentLevel != null)
-        {
-            var color = _currentLevel.IsPassedPar ? Color.OrangeRed : Color.White;
-            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
-                _currentLevel.ParStatus() ?? "No level", safeAreaRect, Alignment.TopCenter,
-                new DrawSettings
-                    {Color = color, Depth = Depth.Middle});
-            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
-                _currentLevel.ParStatus() ?? "No level", safeAreaRect.Moved(new Vector2(2)), Alignment.TopCenter,
-                new DrawSettings {Depth = Depth.Middle + 1, Color = Color.Black});
-            
-            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 40),
-                "notexplosive.net", safeAreaRect, Alignment.BottomCenter,
-                new DrawSettings
-                    {Color = Color.White, Depth = Depth.Middle});
-        }
-
+        DrawParText(painter);
         painter.EndSpriteBatch();
 
         painter.BeginSpriteBatch();
@@ -295,6 +284,24 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             painter.BeginSpriteBatch(Matrix.Identity);
             _creditsGui.Draw(painter, _mainGuiTheme);
             painter.EndSpriteBatch();
+        }
+    }
+
+    private void DrawParText(Painter painter)
+    {
+        var safeAreaRect = Runtime.Window.RenderResolution.ToRectangleF().Inflated(-20, -20);
+        if (_currentLevel != null)
+        {
+            var color = _currentLevel.IsPassedPar ? Color.OrangeRed : Color.White;
+            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 80),
+                _currentLevel.ParStatus(), safeAreaRect, Alignment.TopCenter,
+                new DrawSettings
+                    {Color = color, Depth = Depth.Middle});
+
+            painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 40),
+                "notexplosive.net", safeAreaRect, Alignment.BottomCenter,
+                new DrawSettings
+                    {Color = Color.White, Depth = Depth.Middle});
         }
     }
 

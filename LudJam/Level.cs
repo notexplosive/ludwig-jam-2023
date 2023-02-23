@@ -27,7 +27,7 @@ public class Level
     private Actor? _cat;
     private ParCounter? _parCounter;
     private Actor? _spawn;
-    private int _strokeCount;
+    public int StrokeCount { get; private set; }
 
     public Level()
     {
@@ -50,7 +50,7 @@ public class Level
 
     public Scene Scene { get; }
     public Dictionary<Actor, HoverState> HoverStates { get; set; } = new();
-    public bool IsPassedPar => _strokeCount > ParStrokeCount;
+    public bool IsPassedPar => StrokeCount > ParStrokeCount;
 
     private void WhenActorRemoved(Actor actor)
     {
@@ -224,12 +224,12 @@ public class Level
 
     public string ParStatus()
     {
-        return $"Par: {_strokeCount} / {ParStrokeCount}";
+        return $"Par: {StrokeCount} / {ParStrokeCount}";
     }
 
     public void IncrementStrokeCount()
     {
-        _strokeCount++;
+        StrokeCount++;
     }
 
     public Level FinishLoadingLevelForGame()
