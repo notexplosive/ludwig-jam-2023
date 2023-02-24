@@ -117,7 +117,7 @@ public class Level
             {
                 _cat = Scene.AddNewActor();
                 _cat.Scale = LudGameCartridge.ActorScale;
-                _cat.Depth = Depth.Front + 100;
+                _cat.Depth = Depth.Front + 101;
                 _cat.AddComponent<EditorSerializable>()
                     .Init(actor => new CatData {X = actor.Position.X, Y = actor.Position.Y});
                 _cat.AddComponent<SpriteFrameRenderer>()

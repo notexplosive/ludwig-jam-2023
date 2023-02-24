@@ -45,7 +45,7 @@ public class Cat : BaseComponent
                 new Scale2D(LudGameCartridge.ActorScale.Value.StraightMultiply(_handScale)),
                 new DrawSettings
                 {
-                    Depth = Depth.Front,
+                    Depth = Actor.Depth + 5,
                     Color = G.CharacterColor,
                     Angle = _handAngle,
                     Origin = DrawOrigin.Center
