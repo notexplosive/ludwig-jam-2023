@@ -59,8 +59,9 @@ public class Cat : BaseComponent
 
         if (_handVisible)
         {
-            LudGameCartridge.Instance.AddCameraFocusPoint(_handPosition);
             _tween.Update(dt);
+            var moreAbovePosition = Actor.Position + new Vector2(32, -128 - 64);
+            LudGameCartridge.Instance.AddCameraFocusPoint(moreAbovePosition);
         }
     }
 
@@ -87,6 +88,7 @@ public class Cat : BaseComponent
         G.Music.FadeToOff(2f);
         G.ImpactFreeze(0.05f);
         var abovePosition = Actor.Position + new Vector2(32, -128);
+        var lessAbovePosition  = Actor.Position + new Vector2(32, -128 + 32);
         var moreAbovePosition = Actor.Position + new Vector2(32, -128 - 64);
         var pettingPosition = Actor.Position + new Vector2(32, -64);
         _tween.Clear();
@@ -96,12 +98,40 @@ public class Cat : BaseComponent
 
         _tween.Add(_handPosition.TweenTo(pettingPosition, 0.1f, Ease.CubicFastSlow));
 
-        var totalNumberOfPets = 5;
+        var totalNumberOfPets = 3;
         for (var i = 0; i < totalNumberOfPets; i++)
         {
-            _tween.Add(_handAngle.TweenTo(-MathF.PI / 8f, 0.1f, Ease.Linear));
+            // _tween.Add(_handAngle.TweenTo(-MathF.PI / 8f, 0.1f, Ease.Linear));
+            // _tween.Add(_handPosition.TweenTo(lessAbovePosition, 0.1f, Ease.QuadFastSlow));
+
+            
+            // play sound
             _tween.Add(new CallbackTween(() => G.StopThenPlaySound("cat/pet", new SoundEffectSettings {Volume = 1f})));
-            _tween.Add(_handAngle.TweenTo(0, 0.1f, Ease.Linear));
+
+            var duration = 0.15f;
+            // lean left
+            _tween.Add(new MultiplexTween()
+                .AddChannel(_handAngle.TweenTo(MathF.PI / 8f, duration, Ease.Linear))
+                .AddChannel(_handPosition.TweenTo(pettingPosition + new Vector2(20, 0), duration, Ease.CubicFastSlow))
+            );
+            
+            // center
+            _tween.Add(new MultiplexTween()
+                .AddChannel(_handAngle.TweenTo(0, duration, Ease.Linear))
+                .AddChannel(_handPosition.TweenTo(pettingPosition, duration, Ease.CubicFastSlow))
+            );
+            
+            // lean right
+            _tween.Add(new MultiplexTween()
+                .AddChannel(_handAngle.TweenTo(-MathF.PI / 8f, duration, Ease.Linear))
+                .AddChannel(_handPosition.TweenTo(pettingPosition - new Vector2(20, 0), duration, Ease.CubicFastSlow))
+            );
+            
+            // bounce back up
+            _tween.Add(new MultiplexTween()
+                .AddChannel(_handAngle.TweenTo(0, duration, Ease.Linear))
+                .AddChannel(_handPosition.TweenTo(lessAbovePosition, duration, Ease.CubicFastSlow))
+            );
         }
 
         _tween.Add(_handAngle.TweenTo(0, 0.15f, Ease.Linear));

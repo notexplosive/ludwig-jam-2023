@@ -43,6 +43,14 @@
       "WallType": 1
     },
     {
+      "Name": "Wall",
+      "Width": 136,
+      "Height": 116,
+      "X": 2668,
+      "Y": 559,
+      "WallType": 2
+    },
+    {
       "Name": "Par",
       "Amount": 3
     }

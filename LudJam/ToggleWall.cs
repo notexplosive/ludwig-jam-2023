@@ -29,7 +29,7 @@ public class ToggleWall : BaseComponent
         {
             var color = _startOn ? G.ToggleWallOnColor1 : G.ToggleWallOffColor1;
             painter.DrawLineRectangle(_boundingRectangle,new LineDrawSettings{ Color = color, Thickness = 10, Depth = Actor.Depth});
-            painter.DrawRectangle(_boundingRectangle,new DrawSettings{ Color = color.WithMultipliedOpacity(0.15f), Depth = Actor.Depth});
+            // painter.DrawRectangle(_boundingRectangle,new DrawSettings{ Color = color.WithMultipliedOpacity(0.15f), Depth = Actor.Depth});
         }
     }
 

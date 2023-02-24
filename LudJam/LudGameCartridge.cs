@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ExplogineCore;
 using ExplogineCore.Data;
 using ExplogineMonoGame;
@@ -310,6 +311,17 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public override void Update(float dt)
     {
+        _totalElapsedTime += dt;
+        _levelTransitionTween.Update(dt);
+
+        if (G.ImpactTimer > 0)
+        {
+            G.ImpactTimer -= dt;
+            return;
+        }
+        
+        // Below only happens when we are NOT in impact pause
+        
         if (_cameraFocusObjects.Count > 0)
         {
             var totalPosition = Vector2.Zero;
@@ -341,19 +353,10 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         {
             _cameraTargetRect = Runtime.Window.RenderResolution.ToRectangleF();
         }
-
+        
         _cameraTargetRect = _cameraTargetRect.InflatedMaintainAspectRatio(100);
         _camera.ViewBounds = TweenableRectangleF.LerpRectangleF(_camera.ViewBounds, _cameraTargetRect, 0.1f);
-
-        _totalElapsedTime += dt;
-        _levelTransitionTween.Update(dt);
-
-        if (G.ImpactTimer > 0)
-        {
-            G.ImpactTimer -= dt;
-            return;
-        }
-
+        
         _currentLevel?.Scene.Update(dt);
     }
 
@@ -454,6 +457,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
 
     public void AddCameraFocusPoint(Vector2 point)
     {
+        // call this during update input
         _cameraFocusObjects.Add(point);
     }
 
