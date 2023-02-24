@@ -1,5 +1,5 @@
 tutorial
-come hither
+come-hither
 canyon
 ez-blue
 toggle-1

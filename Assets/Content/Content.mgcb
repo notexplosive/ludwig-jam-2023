@@ -13,9 +13,6 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin cat/c senor.json
-/copy:cat/c senor.json
-
 #begin cat/canyon.json
 /copy:cat/canyon.json
 
@@ -34,11 +31,26 @@
 /processorParam:Quality=Best
 /build:cat/crashtroid-xenon.ogg
 
+#begin cat/dense-core.json
+/copy:cat/dense-core.json
+
+#begin cat/double-cross.json
+/copy:cat/double-cross.json
+
 #begin cat/enter-goop.ogg
 /importer:OggImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:cat/enter-goop.ogg
+
+#begin cat/ez-blue.json
+/copy:cat/ez-blue.json
+
+#begin cat/ez-nojump.json
+/copy:cat/ez-nojump.json
+
+#begin cat/ez-red.json
+/copy:cat/ez-red.json
 
 #begin cat/firework.ogg
 /importer:OggImporter
@@ -53,17 +65,11 @@
 /processorParam:TextureFormat=Compressed
 /build:cat/Font.spritefont
 
-#begin cat/foob.json
-/copy:cat/foob.json
-
 #begin cat/fwp.ogg
 /importer:OggImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:cat/fwp.ogg
-
-#begin cat/game.json
-/copy:cat/game.json
 
 #begin cat/glass.ogg
 /importer:OggImporter
@@ -71,8 +77,11 @@
 /processorParam:Quality=Best
 /build:cat/glass.ogg
 
-#begin cat/grungle.json
-/copy:cat/grungle.json
+#begin cat/go-around.json
+/copy:cat/go-around.json
+
+#begin cat/in-and-out.json
+/copy:cat/in-and-out.json
 
 #begin cat/leave-goop.ogg
 /importer:OggImporter
@@ -85,6 +94,9 @@
 
 #begin cat/MochiyPopPOne-Regular.ttf
 /copy:cat/MochiyPopPOne-Regular.ttf
+
+#begin cat/moonshot.json
+/copy:cat/moonshot.json
 
 #begin cat/OFL.txt
 /copy:cat/OFL.txt
@@ -134,8 +146,17 @@
 /processorParam:Quality=Best
 /build:cat/spark.ogg
 
-#begin cat/stairway.json
-/copy:cat/stairway.json
+#begin cat/toggle-1.json
+/copy:cat/toggle-1.json
+
+#begin cat/tutorial.json
+/copy:cat/tutorial.json
+
+#begin cat/zig-zag.json
+/copy:cat/zig-zag.json
+
+#begin cat/zig-zag2.json
+/copy:cat/zig-zag2.json
 
 #begin engine/bubbles.ogg
 /importer:OggImporter

@@ -122,7 +122,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
         _mainMenuGui.DynamicLabel(safeZone, Depth.Middle,
             (painter, theme, rectangle, depth) =>
             {
-                painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 250), "Pet The Cat", rectangle,
+                painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 200), "Super Pet The Cat", rectangle,
                     Alignment.TopLeft, new DrawSettings());
 
                 painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 64),
@@ -134,7 +134,7 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             (painter, theme, rectangle, depth) =>
             {
                 painter.DrawStringWithinRectangle(Client.Assets.GetFont("cat/Font", 64),
-                    "Music by Crashtroid\nSome art from game-icons.net\nEverything else by NotExplosive\n\nMade with MonoGame and Explogine",
+                    "Music by Crashtroid\nSome art from game-icons.net\nEverything else by NotExplosive\n\nMade with MonoGame and Explogine\n\nPlay more of my games at notexplosive.net",
                     rectangle, Alignment.CenterLeft, new DrawSettings());
             });
 
@@ -337,7 +337,12 @@ public class LudGameCartridge : NoProviderCartridge, ILoadEventProvider
             _cameraTargetRect = totalRectangle;
             _cameraFocusObjects.Clear();
         }
+        else
+        {
+            _cameraTargetRect = Runtime.Window.RenderResolution.ToRectangleF();
+        }
 
+        _cameraTargetRect = _cameraTargetRect.InflatedMaintainAspectRatio(100);
         _camera.ViewBounds = TweenableRectangleF.LerpRectangleF(_camera.ViewBounds, _cameraTargetRect, 0.1f);
 
         _totalElapsedTime += dt;
